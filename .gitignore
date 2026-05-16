@@ -1,0 +1,46 @@
+# Python / Django
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+*.db
+backend/media/
+backend/staticfiles/
+*.log
+.env
+.env.*
+
+# Node / React
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
+build/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Project Specific
+.local_backups/
+OctoPrint_Local/venv/
+OctoPrint_UV/venv/
+OctoPrint_Windows/venv/
+backend/shap_e_model_cache/
+backend/media/
+backend/staticfiles/
+ai-model/weights/
+sample-data/
+**/__pycache__/
+**/*.pyc
+**/*.log
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
