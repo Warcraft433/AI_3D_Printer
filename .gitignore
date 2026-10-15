@@ -7,6 +7,10 @@ __pycache__/
 *.pyd
 db.sqlite3
 *.db
+*.bak*
+*.backup*
+*.mv.db
+data/
 backend/media/
 backend/staticfiles/
 *.log
@@ -20,6 +24,15 @@ frontend/dist/
 dist/
 build/
 
+# Java / Maven
+target/
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/wrapper/maven-wrapper.jar
+
 # IDEs and Editors
 .vscode/
 .idea/
@@ -28,6 +41,10 @@ build/
 
 # Project Specific
 .local_backups/
+tools/
+scratch/
+artifacts/
+shap_e_model_cache/
 OctoPrint_Local/venv/
 OctoPrint_UV/venv/
 OctoPrint_Windows/venv/
