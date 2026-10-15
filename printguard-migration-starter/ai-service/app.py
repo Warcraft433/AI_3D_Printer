@@ -1,11 +1,12 @@
 import os
+import secrets
 import sys
 from pathlib import Path
 from typing import Any
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -64,17 +65,54 @@ def get_model():
     return _model
 
 
+def is_production_environment() -> bool:
+    env = os.getenv("ENVIRONMENT", "").strip().lower()
+    render_env = os.getenv("RENDER", "").strip().lower()
+    strict_auth = os.getenv("STRICT_AUTH", "").strip().lower()
+    return env in ("production", "prod") or render_env == "true" or strict_auth in ("true", "1")
+
+
+def verify_internal_token(request: Request) -> None:
+    expected_token = os.getenv("AI_SERVICE_API_KEY", "").strip()
+    if not expected_token:
+        if is_production_environment():
+            raise HTTPException(
+                status_code=500,
+                detail="Security configuration error: AI_SERVICE_API_KEY must be configured in production"
+            )
+        # Internal token validation disabled when AI_SERVICE_API_KEY is not configured in local development
+        return
+
+    token = request.headers.get("X-Internal-Token")
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header[7:].strip()
+
+    if not token or not secrets.compare_digest(token, expected_token):
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized: invalid or missing internal service token"
+        )
+
+
 @app.get("/health")
 @app.get("/api/inference/health")
 def health() -> dict[str, Any]:
+    is_prod = is_production_environment()
+    token_configured = bool(os.getenv("AI_SERVICE_API_KEY", "").strip())
+    has_model = MODEL_PATH.is_file()
+
+    is_healthy = has_model and (not is_prod or token_configured)
     return {
-        "status": "UP" if MODEL_PATH.is_file() else "DEGRADED",
+        "status": "UP" if is_healthy else ("DEGRADED" if has_model else "DOWN"),
         "service": "printguard-ai",
-        "model_configured": MODEL_PATH.is_file(),
+        "model_configured": has_model,
+        "security_configured": token_configured or not is_prod,
     }
 
 
-@app.post("/api/inference/detect-frame")
+@app.post("/api/inference/detect-frame", dependencies=[Depends(verify_internal_token)])
 async def detect_frame(file: UploadFile = File(...)) -> dict[str, Any]:
     if file.content_type not in {"image/jpeg", "image/png", "image/webp", "application/octet-stream"}:
         raise HTTPException(status_code=415, detail="Upload a JPEG, PNG, or WEBP frame")
@@ -113,7 +151,7 @@ class GeometryRequest(BaseModel):
     format: str = "obj"
 
 
-@app.post("/api/geometry/generate")
+@app.post("/api/geometry/generate", dependencies=[Depends(verify_internal_token)])
 def generate_geometry(req: GeometryRequest) -> dict[str, Any]:
     if generate_model is None:
         raise HTTPException(status_code=503, detail="Procedural geometry generator not loaded")

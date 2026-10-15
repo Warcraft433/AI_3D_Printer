@@ -38,6 +38,7 @@ management:
 
 printguard:
   ai-service-url: ${AI_SERVICE_URL:http://127.0.0.1:8001}
+  ai-service-api-key: ${AI_SERVICE_API_KEY:}
   slicer-path: ${SLICER_PATH:${PRUSA_SLICER_PATH:}}
   slicer-timeout-seconds: ${SLICER_TIMEOUT_SECONDS:90}
   slicer-profile: ${SLICER_PROFILE:Original Prusa i3 MK3S & MK3S+}

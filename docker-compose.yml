@@ -30,6 +30,7 @@ services:
       - "8001:8001"
     environment:
       - PORT=8001
+      - AI_SERVICE_API_KEY=${AI_SERVICE_API_KEY:-}
 
   backend:
     build:
@@ -49,6 +50,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME:-printguard_app}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-change-this-password}
       - AI_SERVICE_URL=http://ai-service:8001
+      - AI_SERVICE_API_KEY=${AI_SERVICE_API_KEY:-}
       - SLICER_PATH=${SLICER_PATH:-/usr/bin/prusa-slicer}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
     volumes:

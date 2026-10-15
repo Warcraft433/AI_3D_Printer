@@ -15,8 +15,9 @@ COPY printguard-migration-starter/ai-service/ .
 COPY ai-model/ /app/ai-model/
 
 ENV PORT=8001 \
+    ENVIRONMENT=production \
     YOLO_MODEL_PATH=/app/ai-model/best.pt
 
 EXPOSE 8001
 
-CMD ["python", "-m", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["sh", "-c", "exec python -m uvicorn app:app --host 0.0.0.0 --port ${PORT:-8001}"]
