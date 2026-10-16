@@ -1,0 +1,22 @@
+# Production Profile Configuration
+# When this profile is active, PRINTGUARD_JWT_SECRET MUST be set in environment variables.
+# There is NO default fallback, preventing silent deployment with development secrets.
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+printguard:
+  jwt:
+    # Strictly require PRINTGUARD_JWT_SECRET in production. No silent fallback allowed.
+    secret: ${PRINTGUARD_JWT_SECRET}
+    expiration-ms: ${PRINTGUARD_JWT_EXPIRATION_MS:86400000}
