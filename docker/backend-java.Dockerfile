@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile for PrintGuard Java Spring Boot Backend
-FROM maven:3.9.6-eclipse-temurin-21-noble AS builder
+FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /build
 COPY printguard-migration-starter/backend-java/pom.xml .
