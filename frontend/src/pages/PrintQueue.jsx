@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Printer, Clock, CheckCircle, XCircle, Pause, ArrowRight, Download, FileCode, Trash2 } from 'lucide-react'
-import api from '../services/api'
+import { Printer, Clock, CheckCircle, XCircle, Pause, ArrowRight, Download, FileCode, Trash2, AlertTriangle, Layers } from 'lucide-react'
+import api, { getWebSocketUrl, getAuthenticatedUrl } from '../services/api'
+import GCodePreviewModal from '../components/GCodePreviewModal'
 
 const PIPE_STEPS = ['Model', 'Slicing', 'G-Code', 'Printer']
 
@@ -15,7 +16,7 @@ function PipelineStep({ label, active, done }) {
     )
 }
 
-function JobCard({ initialJob, onCancel, onUpdate }) {
+function JobCard({ initialJob, onCancel, onUpdate, onPreview }) {
     const [job, setJob] = useState(initialJob)
 
     useEffect(() => {
@@ -28,7 +29,7 @@ function JobCard({ initialJob, onCancel, onUpdate }) {
             return
         }
 
-        const wsUrl = `ws://localhost:8000/ws/print-jobs/${job.id}/`
+        const wsUrl = getWebSocketUrl(`/ws/print-jobs/${job.id}/`)
         const socket = new WebSocket(wsUrl)
 
         socket.onopen = () => console.log(`WS Connected for Job ${job.id}`)
@@ -87,9 +88,28 @@ function JobCard({ initialJob, onCancel, onUpdate }) {
             </div>
 
             {job.error_detail && (
-                <div className="text-xs text-danger bg-danger/10 p-2 rounded border border-danger/20">
-                    {job.error_detail}
-                </div>
+                job.status === 'ready_to_print' || job.status === 'printing' || job.status === 'completed' ? (
+                    <div className="text-xs text-amber-300 bg-amber-500/10 p-2.5 rounded-lg border border-amber-500/25 flex items-start gap-2">
+                        <AlertTriangle size={14} className="flex-shrink-0 mt-0.5 text-amber-400" />
+                        <div>
+                            <span className="font-semibold text-amber-300">Slicer Advisory: </span>
+                            <span className="text-amber-200/90">{job.error_detail.replace(/^\[Slicer (Warnings|Notice)\]\s*/, '')}</span>
+                            <span className="block text-[11px] text-muted mt-0.5">Slicing succeeded with valid G-code instructions ready for download.</span>
+                        </div>
+                    </div>
+                ) : job.status === 'cancelled' ? (
+                    <div className="text-xs text-muted bg-surface/50 p-2 rounded border border-border/50">
+                        {job.error_detail || 'Print job was cancelled.'}
+                    </div>
+                ) : (
+                    <div className="text-xs text-danger bg-danger/10 p-2.5 rounded-lg border border-danger/25 flex items-start gap-2">
+                        <XCircle size={14} className="flex-shrink-0 mt-0.5 text-danger" />
+                        <div>
+                            <span className="font-semibold text-danger">Slicing Failed: </span>
+                            <span className="text-danger/90">{job.error_detail}</span>
+                        </div>
+                    </div>
+                )
             )}
 
             {/* Pipeline */}
@@ -139,9 +159,18 @@ function JobCard({ initialJob, onCancel, onUpdate }) {
                     </button>
                 )}
                 {job.gcode_url && (
-                    <a href={job.gcode_url} download className="btn-ghost bg-surface text-xs text-primary border border-primary/20 hover:bg-primary/10 flex-[0.7] justify-center py-2 flex items-center gap-1 whitespace-nowrap">
-                        <Download size={14} /> G-Code
-                    </a>
+                    <>
+                        <button
+                            onClick={() => onPreview && onPreview(job)}
+                            className="btn-ghost bg-surface text-xs text-cyan-400 border border-cyan-500/20 hover:bg-cyan-500/10 flex-[0.7] justify-center py-2 flex items-center gap-1 whitespace-nowrap"
+                            title="Interactive 3D G-code Toolpath Preview"
+                        >
+                            <Layers size={14} /> Preview
+                        </button>
+                        <a href={getAuthenticatedUrl(job.gcode_url)} download className="btn-ghost bg-surface text-xs text-primary border border-primary/20 hover:bg-primary/10 flex-[0.7] justify-center py-2 flex items-center gap-1 whitespace-nowrap">
+                            <Download size={14} /> G-Code
+                        </a>
+                    </>
                 )}
                 {(job.status === 'printing' || job.status === 'slicing' || job.status === 'ready_to_print') && (
                     <button onClick={() => onCancel(job.id)} className="btn-ghost text-xs text-danger border-danger/30 hover:bg-danger/10 flex-1 justify-center py-2">
@@ -157,10 +186,26 @@ export default function PrintQueue() {
     const [jobs, setJobs] = useState([])
     const [loading, setLoading] = useState(true)
     const [octoprintStatus, setOctoprintStatus] = useState(null) // null = checking, object = result
+    const [previewJob, setPreviewJob] = useState(null)
 
-    const fetchJobs = useCallback(() =>
-        api.get('/print-jobs/').then(r => setJobs(r.data.results || r.data || [])).finally(() => setLoading(false))
-        , [])
+    const fetchJobs = useCallback(() => {
+        api.get('/print-jobs/')
+            .then(r => {
+                const data = r.data
+                if (Array.isArray(data)) {
+                    setJobs(data)
+                } else if (data && Array.isArray(data.results)) {
+                    setJobs(data.results)
+                } else {
+                    setJobs([])
+                }
+            })
+            .catch(err => {
+                console.error('Failed to fetch print jobs:', err)
+                setJobs([])
+            })
+            .finally(() => setLoading(false))
+    }, [])
 
     useEffect(() => { fetchJobs() }, [fetchJobs])
 
@@ -192,19 +237,24 @@ export default function PrintQueue() {
 
     return (
         <div className="page-enter space-y-6">
-            {/* OctoPrint Connection Banner */}
-            <div className="glass-card flex items-center gap-4">
-                <div className={`p-3 rounded-xl ${octoprintStatus?.printer_connected ? 'bg-success/10' : 'bg-warning/10'}`}>
-                    <Printer size={24} className={octoprintStatus?.printer_connected ? 'text-success' : 'text-warning'} />
+            {/* OctoPrint / Printer Hardware Banner */}
+            <div className="glass-card flex items-center gap-4 border-amber-500/20">
+                <div className={`p-3 rounded-xl bg-amber-500/10`}>
+                    <Printer size={24} className="text-amber-400" />
                 </div>
                 <div>
-                    <p className="text-white font-semibold">OctoPrint Integration</p>
-                    <p className="text-muted text-sm">
+                    <div className="flex items-center gap-2">
+                        <p className="text-white font-semibold">Physical 3D Printer Hardware</p>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                            Integration in Progress (Coming Soon)
+                        </span>
+                    </div>
+                    <p className="text-muted text-sm mt-0.5">
                         {octoprintStatus === null
-                            ? 'Checking connection...'
+                            ? 'Checking status...'
                             : octoprintStatus.printer_connected
-                                ? `${octoprintStatus.print_state}${octoprintStatus.simulated ? ' (Virtual Printer)' : ''}`
-                                : 'Connect your Raspberry Pi to enable real print control'}
+                                ? `${octoprintStatus.print_state}${octoprintStatus.simulated ? ' (Virtual Demo Server)' : ' (OctoPrint link)'}`
+                                : 'Hardware printing is coming soon. The current demonstration focuses on AI 3D modeling, slicing, and computer-vision quality inspection.'}
                     </p>
                 </div>
                 <div className="ml-auto flex items-center gap-2">
@@ -216,14 +266,7 @@ export default function PrintQueue() {
                             <Trash2 size={14} /> Clear Finished
                         </button>
                     )}
-                    {octoprintStatus === null ? (
-                        <span className="status-badge border bg-muted/10 text-muted border-muted/25 animate-pulse">Checking...</span>
-                    ) : octoprintStatus.printer_connected ? (
-                        <span className="status-badge border bg-success/10 text-success border-success/25"><span className="pulse-dot shrink-0" /> Connected · port 5000</span>
-                    ) : (
-                        <span className="status-badge border bg-warning/10 text-warning border-warning/25">Not Connected</span>
-                    )}
-                    <a href="http://localhost:5000" target="_blank" rel="noopener noreferrer" className="btn-ghost text-xs">Open OctoPrint ↗</a>
+                    <span className="status-badge border bg-amber-500/10 text-amber-300 border-amber-500/25">Coming Soon</span>
                 </div>
             </div>
 
@@ -238,9 +281,16 @@ export default function PrintQueue() {
                 </div>
             ) : (
                 <div className="space-y-4">
-                    {jobs.map(job => <JobCard key={job.id} initialJob={job} onCancel={cancelJob} />)}
+                    {jobs.map(job => <JobCard key={job.id} initialJob={job} onCancel={cancelJob} onPreview={setPreviewJob} />)}
                 </div>
             )}
+
+            <GCodePreviewModal
+                jobId={previewJob?.id}
+                initialTitle={previewJob?.model_prompt}
+                isOpen={Boolean(previewJob)}
+                onClose={() => setPreviewJob(null)}
+            />
         </div>
     )
 }

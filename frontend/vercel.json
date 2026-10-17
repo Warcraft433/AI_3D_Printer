@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://printguard-backend.onrender.com/api/:path*"
+    },
+    {
+      "source": "/media/:path*",
+      "destination": "https://printguard-backend.onrender.com/media/:path*"
+    },
+    {
+      "source": "/actuator/:path*",
+      "destination": "https://printguard-backend.onrender.com/actuator/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

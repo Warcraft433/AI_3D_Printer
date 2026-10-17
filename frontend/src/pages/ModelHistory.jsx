@@ -1,13 +1,13 @@
 import { useState, useEffect, Suspense, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
-import { Folder, Eye, Download, Trash2, X, Clock, Zap, Printer } from 'lucide-react'
+import { Folder, Eye, Download, Trash2, X, Clock, Zap, Printer, AlertTriangle, RefreshCw } from 'lucide-react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Stage } from '@react-three/drei'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
 import { useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
-import api from '../services/api'
+import api, { getAuthenticatedUrl } from '../services/api'
 import SlicingModal from '../components/SlicingModal'
 
 // ── display mode constants ──────────────────────────────────────────────────
@@ -84,6 +84,13 @@ function ModelCard({ model, onView, onDelete, onSlice }) {
                 <p className="text-muted text-xs mt-1">{new Date(model.created_at).toLocaleDateString()}</p>
                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <StatusBadge status={model.status} />
+                    {model.is_fallback ? (
+                        <span className="status-badge border bg-warning/10 text-warning border-warning/25 text-[10px]">Demo Placeholder</span>
+                    ) : (model.generation_method === 'procedural_cad' || model.is_procedural || model.source_type === 'procedural') ? (
+                        <span className="status-badge border bg-primary/10 text-primary border-primary/25 text-[10px]">Procedural CAD</span>
+                    ) : (
+                        <span className="status-badge border bg-success/10 text-success border-success/25 text-[10px]">AI Generated</span>
+                    )}
                     {model.generation_time && (
                         <span className="flex items-center gap-1 text-xs text-muted">
                             <Clock size={11} /> {model.generation_time}s
@@ -225,7 +232,7 @@ function ModelModal({ selected, onClose, onSlice, modelColor, setModelColor, dis
                             <Suspense fallback={null}>
                                 <Stage environment="city" intensity={0.5}>
                                     <ObjPreview
-                                        url={selected.file_url}
+                                        url={getAuthenticatedUrl(selected.file_url)}
                                         color={modelColor}
                                         displayMode={displayMode}
                                     />
@@ -244,8 +251,8 @@ function ModelModal({ selected, onClose, onSlice, modelColor, setModelColor, dis
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                     {[
                         { label: 'Status', value: selected.status },
+                        { label: 'Engine Type', value: selected.is_fallback ? 'Demo Placeholder' : ((selected.generation_method === 'procedural_cad' || selected.is_procedural || selected.source_type === 'procedural') ? 'Procedural CAD (Trimesh)' : 'AI Synthesis') },
                         { label: 'Generation Time', value: selected.generation_time ? `${selected.generation_time}s` : '—' },
-                        { label: 'Steps', value: selected.steps },
                         { label: 'Created', value: new Date(selected.created_at).toLocaleString() },
                     ].map(({ label, value }) => (
                         <div key={label} className="p-3 rounded-lg bg-surface/50 border border-border/50">
@@ -255,10 +262,17 @@ function ModelModal({ selected, onClose, onSlice, modelColor, setModelColor, dis
                     ))}
                 </div>
 
+                {selected.error_detail && (
+                    <div className="p-3 rounded-lg bg-white/5 border border-white/10 text-xs text-muted">
+                        <span className="font-semibold text-white/80">Generator Metadata: </span>
+                        {selected.error_detail}
+                    </div>
+                )}
+
                 {/* ── download & action ── */}
                 {selected.file_url && (
                     <div className="flex gap-2">
-                        <a href={selected.file_url} download className="btn-ghost bg-surface/50 w-full justify-center flex-1 py-3">
+                        <a href={getAuthenticatedUrl(`/api/models/${selected.id}/download`)} download className="btn-ghost bg-surface/50 w-full justify-center flex-1 py-3">
                             <Download size={16} /> Download OBJ
                         </a>
                         <button onClick={() => onSlice(selected.id)} className="btn-primary w-full justify-center flex-[2] shadow-glow py-3">
@@ -285,12 +299,36 @@ export default function ModelHistory() {
 
     const [slicingJob, setSlicingJob] = useState(null)
     const [slicingModelName, setSlicingModelName] = useState('')
+    const [error, setError] = useState(null)
 
-    const fetchModels = () => {
-        api.get('/models/').then(r => setModels(r.data.results || r.data)).finally(() => setLoading(false))
-    }
+    const fetchModels = useCallback(() => {
+        setLoading(true)
+        setError(null)
+        api.get('/models/')
+            .then(r => {
+                const data = r.data
+                if (Array.isArray(data)) {
+                    setModels(data)
+                } else if (data && Array.isArray(data.results)) {
+                    setModels(data.results)
+                } else if (typeof data === 'string' && data.trim().startsWith('<')) {
+                    throw new Error('Received HTML document instead of JSON. Ensure Vercel environment points to Spring Boot.')
+                } else {
+                    throw new Error('Unexpected data format received from backend.')
+                }
+            })
+            .catch(err => {
+                console.error('Model history fetch failed:', err)
+                const message = err.response?.data?.error
+                    || err.response?.data?.message
+                    || err.message
+                    || 'Failed to load 3D models.'
+                setError(message)
+            })
+            .finally(() => setLoading(false))
+    }, [])
 
-    useEffect(() => { fetchModels() }, [])
+    useEffect(() => { fetchModels() }, [fetchModels])
 
     const handleDelete = async (id) => {
         if (!window.confirm('Delete this model?')) return
@@ -323,11 +361,31 @@ export default function ModelHistory() {
         <div className="page-enter space-y-6">
             <div className="flex items-center justify-between">
                 <p className="text-muted text-sm">{models.length} model{models.length !== 1 ? 's' : ''} in database</p>
+                {error && (
+                    <button
+                        onClick={fetchModels}
+                        className="btn-ghost text-xs px-3 py-1 flex items-center gap-1.5 text-primary hover:bg-primary/10 border border-primary/20"
+                    >
+                        <RefreshCw size={12} /> Retry
+                    </button>
+                )}
             </div>
 
             {loading ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
                     {[1, 2, 3, 4].map(i => <div key={i} className="h-64 rounded-xl bg-white/5 animate-pulse" />)}
+                </div>
+            ) : error ? (
+                <div className="glass-card flex flex-col items-center justify-center py-16 text-center border-danger/30">
+                    <AlertTriangle size={48} className="mb-4 text-danger/80" />
+                    <p className="text-lg font-semibold text-white mb-1">Failed to load models</p>
+                    <p className="text-sm text-muted mb-4 max-w-md">{error}</p>
+                    <button
+                        onClick={fetchModels}
+                        className="btn-primary text-xs px-4 py-2 flex items-center gap-2"
+                    >
+                        <RefreshCw size={14} /> Retry Connection
+                    </button>
                 </div>
             ) : models.length === 0 ? (
                 <div className="glass-card flex flex-col items-center justify-center py-20 text-muted">
