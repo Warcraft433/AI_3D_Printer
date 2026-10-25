@@ -5,6 +5,7 @@ import { Folder, Eye, Download, Trash2, X, Clock, Zap, Printer, AlertTriangle, R
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Stage } from '@react-three/drei'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
+import { STLLoader } from 'three/examples/jsm/loaders/STLLoader'
 import { useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import api, { getAuthenticatedUrl } from '../services/api'
@@ -54,6 +55,35 @@ function ObjPreview({ url, color, displayMode }) {
 
     return <primitive object={scene} scale={1} />
 }
+
+// ── STL preview with material controls ─────────────────────────────────────
+function StlPreview({ url, color, displayMode }) {
+    const geom = useLoader(STLLoader, url)
+
+    const mesh = useMemo(() => {
+        geom.computeVertexNormals()
+        let mat
+        if (displayMode === 'wireframe') {
+            mat = new THREE.MeshStandardMaterial({
+                color,
+                wireframe: true,
+            })
+        } else if (displayMode === 'points') {
+            mat = new THREE.PointsMaterial({ color, size: 0.015 })
+            return new THREE.Points(geom, mat)
+        } else {
+            mat = new THREE.MeshStandardMaterial({
+                color,
+                roughness: 0.5,
+                metalness: 0.1,
+            })
+        }
+        return new THREE.Mesh(geom, mat)
+    }, [geom, color, displayMode])
+
+    return <primitive object={mesh} scale={1} />
+}
+
 
 // ── status badge ────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
@@ -231,11 +261,21 @@ function ModelModal({ selected, onClose, onSlice, modelColor, setModelColor, dis
                         <Canvas camera={{ position: [0, 0, 3] }}>
                             <Suspense fallback={null}>
                                 <Stage environment="city" intensity={0.5}>
-                                    <ObjPreview
-                                        url={getAuthenticatedUrl(selected.file_url)}
-                                        color={modelColor}
-                                        displayMode={displayMode}
-                                    />
+                                    {(selected.file_path?.toLowerCase().endsWith('.stl') || selected.file_url?.toLowerCase().includes('.stl')) ? (
+                                        <StlPreview
+                                            key={selected.file_url}
+                                            url={getAuthenticatedUrl(selected.file_url)}
+                                            color={modelColor}
+                                            displayMode={displayMode}
+                                        />
+                                    ) : (
+                                        <ObjPreview
+                                            key={selected.file_url}
+                                            url={getAuthenticatedUrl(selected.file_url)}
+                                            color={modelColor}
+                                            displayMode={displayMode}
+                                        />
+                                    )}
                                 </Stage>
                                 <OrbitControls autoRotate />
                             </Suspense>
@@ -273,7 +313,7 @@ function ModelModal({ selected, onClose, onSlice, modelColor, setModelColor, dis
                 {selected.file_url && (
                     <div className="flex gap-2">
                         <a href={getAuthenticatedUrl(`/api/models/${selected.id}/download`)} download className="btn-ghost bg-surface/50 w-full justify-center flex-1 py-3">
-                            <Download size={16} /> Download OBJ
+                            <Download size={16} /> Download {selected.file_path?.toLowerCase().endsWith('.stl') || selected.file_url?.toLowerCase().includes('.stl') ? 'STL' : 'OBJ'}
                         </a>
                         <button onClick={() => onSlice(selected.id)} className="btn-primary w-full justify-center flex-[2] shadow-glow py-3">
                             <Printer size={16} /> Send to Queue

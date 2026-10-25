@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrintGuard AI 3D Printer - Master Technical Documentation</title>
+    <style>
+        @page {{
+            size: A4;
+            margin: 18mm 16mm 18mm 16mm;
+            @bottom-right {{
+                content: "Page " counter(page);
+                font-family: 'Segoe UI', system-ui, sans-serif;
+                font-size: 8pt;
+                color: #64748b;
+            }}
+            @bottom-left {{
+                content: "PrintGuard AI 3D Printer — Project Master Documentation";
+                font-family: 'Segoe UI', system-ui, sans-serif;
+                font-size: 8pt;
+                color: #64748b;
+            }}
+        }}
+
+        :root {{
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #e0f2fe;
+            --secondary: #475569;
+            --accent: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }}
+
+        * {{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }}
+
+        body {{
+            font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            color: var(--text-main);
+            background: #ffffff;
+            line-height: 1.55;
+            font-size: 10pt;
+        }}
+
+        /* Print optimization */
+        .page-break {{
+            page-break-before: always;
+            break-before: page;
+        }}
+
+        .avoid-break {{
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }}
+
+        /* Cover Page */
+        .cover-page {{
+            min-height: 250mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 40px 20px 20px 20px;
+            border-bottom: 2px solid var(--border);
+        }}
+
+        .cover-badge {{
+            display: inline-block;
+            background: linear-gradient(135deg, #0284c7, #6366f1);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 9pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }}
+
+        .cover-title {{
+            font-size: 32pt;
+            font-weight: 800;
+            color: var(--dark);
+            line-height: 1.15;
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }}
+
+        .cover-subtitle {{
+            font-size: 14pt;
+            font-weight: 400;
+            color: var(--secondary);
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }}
+
+        .cover-meta-grid {{
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 40px;
+            background: var(--light);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px;
+        }}
+
+        .meta-item {{
+            display: flex;
+            flex-direction: column;
+        }}
+
+        .meta-label {{
+            font-size: 8pt;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }}
+
+        .meta-value {{
+            font-size: 11pt;
+            font-weight: 600;
+            color: var(--dark);
+            margin-top: 2px;
+        }}
+
+        /* Headings */
+        h1, h2, h3, h4, h5 {{
+            color: var(--dark);
+            font-weight: 700;
+        }}
+
+        h1 {{
+            font-size: 20pt;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 6px;
+            margin-top: 28px;
+            margin-bottom: 16px;
+            break-after: avoid;
+        }}
+
+        h2 {{
+            font-size: 14pt;
+            color: var(--primary-dark);
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 4px;
+            break-after: avoid;
+        }}
+
+        h3 {{
+            font-size: 11.5pt;
+            margin-top: 14px;
+            margin-bottom: 8px;
+            color: var(--dark);
+            break-after: avoid;
+        }}
+
+        h4 {{
+            font-size: 10.5pt;
+            margin-top: 10px;
+            margin-bottom: 6px;
+            break-after: avoid;
+        }}
+
+        p {{
+            margin-bottom: 10px;
+            text-align: justify;
+        }}
+
+        /* Lists */
+        ul, ol {{
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }}
+
+        li {{
+            margin-bottom: 4px;
+        }}
+
+        /* Tables */
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 16px;
+            font-size: 9pt;
+            page-break-inside: avoid;
+        }}
+
+        th, td {{
+            padding: 7px 10px;
+            border: 1px solid var(--border);
+            text-align: left;
+            vertical-align: top;
+        }}
+
+        th {{
+            background: #f1f5f9;
+            color: var(--dark);
+            font-weight: 600;
+        }}
+
+        tr:nth-child(even) td {{
+            background: #f8fafc;
+        }}
+
+        /* Code blocks */
+        code {{
+            font-family: 'Consolas', 'Courier New', monospace;
+            background: #f1f5f9;
+            color: #d946ef;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-size: 8.5pt;
+        }}
+
+        pre {{
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 8pt;
+            overflow-x: auto;
+            margin-top: 8px;
+            margin-bottom: 14px;
+            line-height: 1.4;
+            page-break-inside: avoid;
+            border: 1px solid #1e293b;
+        }}
+
+        pre code {{
+            background: transparent;
+            color: inherit;
+            padding: 0;
+            border-radius: 0;
+        }}
+
+        /* Callouts / Alerts */
+        .callout {{
+            border-left: 4px solid var(--primary);
+            background: var(--light);
+            padding: 10px 14px;
+            margin: 12px 0;
+            border-radius: 0 6px 6px 0;
+            page-break-inside: avoid;
+        }}
+
+        .callout-title {{
+            font-weight: 700;
+            font-size: 9.5pt;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }}
+
+        .callout.info {{ border-color: var(--primary); background: #f0f9ff; }}
+        .callout.info .callout-title {{ color: var(--primary-dark); }}
+
+        .callout.warning {{ border-color: var(--warning); background: #fffbeb; }}
+        .callout.warning .callout-title {{ color: #b45309; }}
+
+        .callout.danger {{ border-color: var(--danger); background: #fef2f2; }}
+        .callout.danger .callout-title {{ color: #b91c1c; }}
+
+        .callout.success {{ border-color: var(--success); background: #f0fdf4; }}
+        .callout.success .callout-title {{ color: #15803d; }}
+
+        /* Diagrams container */
+        .diagram-container {{
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            margin: 14px 0;
+            text-align: center;
+            page-break-inside: avoid;
+        }}
+
+        .diagram-caption {{
+            font-size: 8pt;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-style: italic;
+        }}
+
+        /* Feature card */
+        .feature-card {{
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            background: #ffffff;
+            page-break-inside: avoid;
+        }}
+
+        .badge {{
+            display: inline-block;
+            font-size: 7.5pt;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }}
+
+        .badge-ready {{ background: #dcfce7; color: #15803d; }}
+        .badge-partial {{ background: #fef3c7; color: #b45309; }}
+        .badge-planned {{ background: #e0e7ff; color: #4338ca; }}
+
+        /* TOC */
+        .toc-list {{
+            list-style: none;
+            margin-left: 0;
+            margin-top: 14px;
+        }}
+
+        .toc-item {{
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px dotted var(--border);
+            font-size: 9.5pt;
+        }}
+
+        .toc-title {{
+            font-weight: 600;
+            color: var(--dark);
+        }}
+
+        .toc-num {{
+            font-weight: 700;
+            color: var(--primary);
+            margin-right: 8px;
+        }}
+    </style>
+</head>
+<body>
+
+    <!-- COVER PAGE -->
+    <div class="cover-page">
+        <div>
+            <span class="cover-badge">Official Architecture & Engineering Specification</span>
+            <h1 class="cover-title">PrintGuard AI 3D Printer</h1>
+            <p class="cover-subtitle">Complete Project Master Documentation, System Architecture, Codebase Reference, and AI-Driven Maintainer Handbook</p>
+            <div style="height: 4px; width: 80px; background: linear-gradient(90deg, #0284c7, #8b5cf6); border-radius: 2px; margin-bottom: 24px;"></div>
+            <p style="font-size: 10.5pt; color: #475569; max-width: 620px;">
+                A comprehensive, self-contained reference manual detailing the full-stack architecture of PrintGuard AI:
+                Spring Boot 3 REST backend, FastAPI computer vision inference engine, React 18 / Three.js frontend,
+                PostgreSQL/Supabase RLS persistence, PrusaSlicer CLI engine, and Web Serial API direct hardware communication.
+            </p>
+        </div>
+
+        <div class="cover-meta-grid">
+            <div class="meta-item">
+                <span class="meta-label">Document Version</span>
+                <span class="meta-value">2.4.0 (Production Verified)</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Generation Date</span>
+                <span class="meta-value">October 24, 2026</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Architecture Status</span>
+                <span class="meta-value">Multi-Tier Microservice & Hardware Bridge</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Target Audience</span>
+                <span class="meta-value">Senior Architects, AI Agents, Core Maintainers</span>
+            </div>
+        </div>
+
+        <div style="font-size: 8.5pt; color: var(--text-muted); display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 12px;">
+            <span>PrintGuard AI Engineering Team &copy; 2026</span>
+            <span>Confidential & Proprietary Knowledge Base</span>
+        </div>
+    </div>
+
+    <!-- TABLE OF CONTENTS -->
+    <div class="page-break"></div>
+    <h1>Table of Contents</h1>
+    <ul class="toc-list">
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 1</span>Project Overview & Strategic Mission</span><span>Page 3</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 2</span>Complete Technology Stack & Dependency Matrix</span><span>Page 5</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 3</span>System Architecture & Visual Diagrams</span><span>Page 7</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 4</span>Complete Project Structure & Repository Tour</span><span>Page 11</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 5</span>Features & Functional Workflows (13 Core Capabilities)</span><span>Page 14</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 6</span>Backend Engineering & REST/WebSocket API Reference</span><span>Page 20</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 7</span>Frontend Architecture, State Management & Hardware Serial</span><span>Page 25</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 8</span>Database Architecture, Migrations & Supabase RLS Policies</span><span>Page 29</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 9</span>Installation, Environment Configuration & Local Execution</span><span>Page 33</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 10</span>Configuration Matrix & Environment Variables</span><span>Page 37</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 11</span>Testing Strategy, Quality Assurance & Debugging</span><span>Page 40</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 12</span>Deployment Architecture & Cloud Production Setup</span><span>Page 43</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 13</span>Security Architecture, Authentication & Fail-Safe Controls</span><span>Page 46</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 14</span>Known Issues, Technical Debt & Mitigation Table</span><span>Page 49</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 15</span>Future Development Roadmap & Strategic Enhancements</span><span>Page 52</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 16</span>Important Code Reference & Critical Coupling Map</span><span>Page 54</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 17</span>Future Change & Modification Guide (Developer Handbook)</span><span>Page 57</span></li>
+        <li class="toc-item"><span class="toc-title"><span class="toc-num">Chapter 18</span>Project Knowledge Summary (AI Agent Rapid Onboarding)</span><span>Page 61</span></li>
+    </ul>
+
+    <!-- CHAPTER 1 -->
+    <div class="page-break"></div>
+    <h1>Chapter 1: Project Overview & Strategic Mission</h1>
+    <h2>1.1 Project Identity & Core Purpose</h2>
+    <p>
+        <strong>PrintGuard AI</strong> is an autonomous, end-to-end additive manufacturing operating platform. It seamlessly connects
+        cloud-based CAD generation, parametric slicing pipelines, real-time computer vision defect monitoring, and direct browser-to-firmware
+        hardware control. The platform transforms 3D printing from an error-prone, manually observed hobbyist workflow into an enterprise-grade,
+        intelligent, self-monitoring manufacturing pipeline.
+    </p>
+
+    <h2>1.2 The Problem Statement</h2>
+    <p>
+        Fused Deposition Modeling (FDM) 3D printing suffers from an inherent lack of real-time feedback:
+    </p>
+    <ul>
+        <li><strong>Spaghetti Failures & Print Detachment:</strong> When a print detaches from the print bed, the extruder continues depositing molten filament into mid-air, creating extensive nests of ruined plastic ("spaghetti defect"), wasting up to 500g of material and hours of machine time.</li>
+        <li><strong>Thermal Runaway & Physical Fire Risk:</strong> Unmonitored heating elements and mechanical blockages can lead to thermal destruction or dangerous printer failure.</li>
+        <li><strong>Complex, Fragmented Software Toolchain:</strong> Operators traditionally toggle between 3D modeling packages (Blender/Fusion360), separate desktop slicing software (PrusaSlicer/Cura), external camera software (OctoPrint/Moonraker), and physical SD card transfers.</li>
+        <li><strong>Lack of In-Browser Direct Hardware Communication:</strong> Most modern web systems require intermediate Raspberry Pi nodes running OctoPrint, adding hardware cost and complex network setup.</li>
+    </ul>
+
+    <h2>1.3 The PrintGuard AI Solution</h2>
+    <p>
+        PrintGuard AI unifies the entire lifecycle into a unified, secure web ecosystem:
+    </p>
+    <ol>
+        <li><strong>Generative 3D Modeling Engine:</strong> Translates natural language prompts and reference images into manifold 3D models (OBJ/STL) using procedural parametric CAD synthesis and deep learning checkpoints.</li>
+        <li><strong>Integrated Slicing Engine:</strong> Executes PrusaSlicer in headless CLI mode on the server to convert 3D geometry into optimized G-code with custom infill, speed, and support parameters.</li>
+        <li><strong>Deep Learning Computer Vision Guard:</strong> Runs a high-speed YOLOv8/v11 convolutional neural network on streaming camera frames, detecting extrusion failures and print detachment in under 50 milliseconds.</li>
+        <li><strong>Autonomous Fail-Safe Interlock:</strong> When a spaghetti defect or detachment is classified with confidence above threshold (&gt; 0.35), the backend issues an emergency pause command to the printer via WebSocket or OctoPrint REST API, halting extrusion immediately.</li>
+        <li><strong>Direct Browser-to-Printer Web Serial Control:</strong> Leverages the W3C Web Serial API to establish direct USB UART communication from Google Chrome/Edge directly to 3D printer mainboards (e.g., Marlin, RepRap, Klipper) at 115200 or 250000 baud without requiring an external microcomputer.</li>
+    </ol>
+
+    <h2>1.4 Current Development Status & Limitations</h2>
+    <table>
+        <thead>
+            <tr><th>Component</th><th>Current Implementation</th><th>Status</th><th>Verification Source</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Backend API</td><td>Spring Boot 3.3.0, Java 21, Flyway, PostgreSQL</td><td><span class="badge badge-ready">Implemented</span></td><td><code>backend-java/pom.xml</code></td></tr>
+            <tr><td>AI Inference</td><td>FastAPI, Ultralytics YOLOv8 (<code>ai-model/best.pt</code>)</td><td><span class="badge badge-ready">Implemented</span></td><td><code>ai-service/app.py</code></td></tr>
+            <tr><td>Frontend UI</td><td>React 18.2, Vite, TailwindCSS, Three.js</td><td><span class="badge badge-ready">Implemented</span></td><td><code>frontend/package.json</code></td></tr>
+            <tr><td>Procedural CAD</td><td>Parametric Chess Generator (FastAPI + CLI fallback)</td><td><span class="badge badge-ready">Implemented</span></td><td><code>chess_generator.py</code></td></tr>
+            <tr><td>Neural Shap-E 3D</td><td>Shap-E neural weights fallback & static cube demo</td><td><span class="badge badge-partial">Partially Implemented</span></td><td><code>GenerationController.java</code></td></tr>
+            <tr><td>Web Serial Control</td><td>W3C Web Serial API direct printer bridge</td><td><span class="badge badge-ready">Implemented</span></td><td><code>PrinterControl.jsx</code></td></tr>
+            <tr><td>OctoPrint Bridge</td><td>REST API proxy, pause/resume/job creation</td><td><span class="badge badge-ready">Implemented</span></td><td><code>OctoPrintService.java</code></td></tr>
+            <tr><td>Cloud Storage</td><td>Supabase Storage with local filesystem fallback</td><td><span class="badge badge-ready">Implemented</span></td><td><code>SupabaseStorageService.java</code></td></tr>
+        </tbody>
+    </table>
+
+    <!-- CHAPTER 2 -->
+    <div class="page-break"></div>
+    <h1>Chapter 2: Complete Technology Stack & Dependency Matrix</h1>
+    <p>
+        Every layer of the PrintGuard AI software architecture has been audited directly against the source code repositories,
+        dependency manifests, and configuration files.
+    </p>
+
+    <h2>2.1 Backend Architecture (Java Ecosystem)</h2>
+    <table>
+        <thead>
+            <tr><th>Technology</th><th>Version</th><th>Purpose in PrintGuard AI</th><th>Source Manifest</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>OpenJDK</td><td>Java 21 LTS</td><td>High-performance runtime for backend services, virtual threads, modern switch expressions</td><td><code>pom.xml</code> (&lt;java.version&gt;21)</td></tr>
+            <tr><td>Spring Boot</td><td>3.3.0</td><td>Application framework providing DI, auto-configuration, REST controllers, Actuator health probes</td><td><code>pom.xml</code></td></tr>
+            <tr><td>Spring Security</td><td>6.x</td><td>Stateless JWT token filter chain, role-based endpoint authorization, CORS configuration</td><td><code>SecurityConfig.java</code></td></tr>
+            <tr><td>Spring Data JPA</td><td>3.3.0</td><td>Hibernate ORM for mapping database entities to PostgreSQL tables</td><td><code>PrintJobEntity.java</code></td></tr>
+            <tr><td>Flyway Core</td><td>10.x</td><td>Automated database schema migrations, schema versioning, baseline management</td><td><code>V1__init_schema.sql</code></td></tr>
+            <tr><td>PostgreSQL JDBC</td><td>42.7.x</td><td>High-throughput PostgreSQL database connectivity driver</td><td><code>application.yml</code></td></tr>
+            <tr><td>Spring WebSocket</td><td>3.3.0</td><td>Low-latency bidirectional WebSocket communication for real-time printer telemetry and alerts</td><td><code>WebSocketConfig.java</code></td></tr>
+            <tr><td>JJWT (io.jsonwebtoken)</td><td>0.12.5</td><td>Cryptographic HMAC-SHA256 signing and validation of user authentication tokens</td><td><code>JwtService.java</code></td></tr>
+            <tr><td>Argon2 / jBCrypt</td><td>0.4 / 0.9.0</td><td>Adaptive salted password hashing for user credential security</td><td><code>PasswordService.java</code></td></tr>
+        </tbody>
+    </table>
+
+    <h2>2.2 AI Inference & Geometry Microservice (Python Ecosystem)</h2>
+    <table>
+        <thead>
+            <tr><th>Technology</th><th>Version</th><th>Purpose in PrintGuard AI</th><th>Source Manifest</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Python</td><td>3.10 - 3.14</td><td>Execution environment for PyTorch models and computer vision pipelines</td><td><code>ai-service/requirements.txt</code></td></tr>
+            <tr><td>FastAPI</td><td>0.100+</td><td>Asynchronous ASGI microservice exposing <code>/api/inference/detect-frame</code> and geometry endpoints</td><td><code>ai-service/app.py</code></td></tr>
+            <tr><td>Ultralytics YOLO</td><td>8.x / 11.x</td><td>Deep learning convolutional object detector running inference on video frames</td><td><code>ai-service/app.py</code></td></tr>
+            <tr><td>OpenCV (opencv-python)</td><td>4.8+</td><td>Image buffer decoding (<code>cv2.imdecode</code>), color space conversion, frame matrix transformation</td><td><code>app.py</code></td></tr>
+            <tr><td>NumPy</td><td>1.24+</td><td>High-performance numerical array operations for image buffers and bounding boxes</td><td><code>app.py</code></td></tr>
+            <tr><td>Pydantic</td><td>2.x</td><td>Request and response schema validation for geometry and inference API payloads</td><td><code>app.py</code></td></tr>
+        </tbody>
+    </table>
+
+    <h2>2.3 Frontend & Hardware Control (JavaScript Ecosystem)</h2>
+    <table>
+        <thead>
+            <tr><th>Technology</th><th>Version</th><th>Purpose in PrintGuard AI</th><th>Source Manifest</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>React</td><td>18.2.0</td><td>Component-based reactive user interface with hooks and context providers</td><td><code>frontend/package.json</code></td></tr>
+            <tr><td>Vite</td><td>5.1.4</td><td>Next-generation lightning-fast frontend tooling, ES module dev server, and build bundler</td><td><code>vite.config.js</code></td></tr>
+            <tr><td>React Router DOM</td><td>6.22.2</td><td>Client-side routing, protected routes, and authentication guards</td><td><code>frontend/src/App.jsx</code></td></tr>
+            <tr><td>Three.js</td><td>0.162.0</td><td>WebGL 3D canvas rendering for OBJ/STL 3D model inspection and G-code layer visualizer</td><td><code>GCodePreview.jsx</code></td></tr>
+            <tr><td>Axios</td><td>1.6.7</td><td>HTTP client with request/response interceptors for automatic JWT header injection</td><td><code>frontend/src/services/api.js</code></td></tr>
+            <tr><td>Lucide React</td><td>0.344.0</td><td>Modern, consistent SVG iconography for dashboard controls, status badges, and buttons</td><td><code>package.json</code></td></tr>
+            <tr><td>Web Serial API</td><td>W3C Standard</td><td>Direct browser USB serial connection to 3D printer mainboards at 115200/250000 baud</td><td><code>PrinterControl.jsx</code></td></tr>
+        </tbody>
+    </table>
+
+    <!-- CHAPTER 3 -->
+    <div class="page-break"></div>
+    <h1>Chapter 3: System Architecture & Visual Diagrams</h1>
+    <h2>3.1 High-Level Architecture Topology</h2>
+    <p>
+        PrintGuard AI is structured as a decoupled multi-tier architecture consisting of five distinct operational planes:
+        the Client Interaction Plane (React/Three.js), the Business Logic Plane (Spring Boot), the AI & Geometry Inference Plane (FastAPI/PyTorch),
+        the Persistence Plane (PostgreSQL & Supabase Storage), and the Physical Hardware Execution Plane (USB Serial & OctoPrint).
+    </p>
+
+    <div class="diagram-container">
+        <svg viewBox="0 0 800 380" width="100%" height="240" xmlns="http://www.w3.org/2000/svg">
+            <!-- Background -->
+            <rect x="0" y="0" width="800" height="380" fill="#f8fafc" rx="8" />
+            
+            <!-- Tier 1: Client -->
+            <rect x="30" y="30" width="200" height="320" fill="#ffffff" stroke="#0284c7" stroke-width="2" rx="6" />
+            <text x="130" y="55" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#0369a1" text-anchor="middle">CLIENT PLANE (React 18)</text>
+            <rect x="45" y="75" width="170" height="40" fill="#e0f2fe" stroke="#38bdf8" rx="4"/>
+            <text x="130" y="98" font-family="Segoe UI, sans-serif" font-size="9" fill="#0369a1" text-anchor="middle">Three.js 3D & G-Code Canvas</text>
+            <rect x="45" y="125" width="170" height="40" fill="#e0f2fe" stroke="#38bdf8" rx="4"/>
+            <text x="130" y="148" font-family="Segoe UI, sans-serif" font-size="9" fill="#0369a1" text-anchor="middle">Web Serial API (Direct USB)</text>
+            <rect x="45" y="175" width="170" height="40" fill="#e0f2fe" stroke="#38bdf8" rx="4"/>
+            <text x="130" y="198" font-family="Segoe UI, sans-serif" font-size="9" fill="#0369a1" text-anchor="middle">Camera Frame Capture</text>
+            <rect x="45" y="225" width="170" height="40" fill="#e0f2fe" stroke="#38bdf8" rx="4"/>
+            <text x="130" y="248" font-family="Segoe UI, sans-serif" font-size="9" fill="#0369a1" text-anchor="middle">WebSocket Telemetry Client</text>
+            <rect x="45" y="275" width="170" height="40" fill="#e0f2fe" stroke="#38bdf8" rx="4"/>
+            <text x="130" y="298" font-family="Segoe UI, sans-serif" font-size="9" fill="#0369a1" text-anchor="middle">Auth & Session Context</text>
+
+            <!-- Arrows to Backend -->
+            <path d="M 230 145 L 300 145" stroke="#0284c7" stroke-width="2" marker-end="url(#arrow)" />
+            <text x="265" y="135" font-family="Segoe UI, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">HTTPS/WSS</text>
+
+            <!-- Tier 2: Backend -->
+            <rect x="300" y="30" width="220" height="320" fill="#ffffff" stroke="#475569" stroke-width="2" rx="6" />
+            <text x="410" y="55" font-family="Segoe UI, sans-serif" font-size="12" font-weight="bold" fill="#1e293b" text-anchor="middle">BACKEND CORE (Spring Boot 3)</text>
+            <rect x="315" y="75" width="190" height="36" fill="#f1f5f9" stroke="#cbd5e1" rx="4"/>
+            <text x="410" y="97" font-family="Segoe UI, sans-serif" font-size="9" fill="#334155" text-anchor="middle">Security Filter (JWT / RLS)</text>
+            <rect x="315" y="120" width="190" height="36" fill="#f1f5f9" stroke="#cbd5e1" rx="4"/>
+            <text x="410" y="142" font-family="Segoe UI, sans-serif" font-size="9" fill="#334155" text-anchor="middle">Slicer Service (PrusaSlicer CLI)</text>
+            <rect x="315" y="165" width="190" height="36" fill="#f1f5f9" stroke="#cbd5e1" rx="4"/>
+            <text x="410" y="187" font-family="Segoe UI, sans-serif" font-size="9" fill="#334155" text-anchor="middle">Print Job & Auto-Pause Interlock</text>
+            <rect x="315" y="210" width="190" height="36" fill="#f1f5f9" stroke="#cbd5e1" rx="4"/>
+            <text x="410" y="232" font-family="Segoe UI, sans-serif" font-size="9" fill="#334155" text-anchor="middle">Storage Service (Supabase/Local)</text>
+            <rect x="315" y="255" width="190" height="36" fill="#f1f5f9" stroke="#cbd5e1" rx="4"/>
+            <text x="410" y="277" font-family="Segoe UI, sans-serif" font-size="9" fill="#334155" text-anchor="middle">WebSocket Event Dispatcher</text>
+            <rect x="315" y="300" width="190" height="36" fill="#f1f5f9" stroke="#cbd5e1" rx="4"/>
+            <text x="410" y="322" font-family="Segoe UI, sans-serif" font-size="9" fill="#334155" text-anchor="middle">OctoPrint REST Client</text>
+
+            <!-- Arrows to AI Service -->
+            <path d="M 520 100 L 580 100" stroke="#8b5cf6" stroke-width="2" />
+            <text x="550" y="90" font-family="Segoe UI, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">Internal Token</text>
+
+            <!-- Arrows to Database -->
+            <path d="M 520 220 L 580 220" stroke="#10b981" stroke-width="2" />
+            <text x="550" y="210" font-family="Segoe UI, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">JDBC / RLS</text>
+
+            <!-- Tier 3: AI Service -->
+            <rect x="580" y="30" width="190" height="150" fill="#ffffff" stroke="#8b5cf6" stroke-width="2" rx="6" />
+            <text x="675" y="55" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#6d28d9" text-anchor="middle">AI SERVICE (FastAPI)</text>
+            <rect x="595" y="70" width="160" height="32" fill="#ede9fe" stroke="#c4b5fd" rx="4"/>
+            <text x="675" y="90" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#5b21b6" text-anchor="middle">YOLOv8 Spaghetti Detector</text>
+            <rect x="595" y="110" width="160" height="32" fill="#ede9fe" stroke="#c4b5fd" rx="4"/>
+            <text x="675" y="130" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#5b21b6" text-anchor="middle">Parametric CAD Generator</text>
+            <rect x="595" y="148" width="160" height="24" fill="#ede9fe" stroke="#c4b5fd" rx="4"/>
+            <text x="675" y="164" font-family="Segoe UI, sans-serif" font-size="8" fill="#5b21b6" text-anchor="middle">best.pt (PyTorch weights)</text>
+
+            <!-- Tier 4: Storage & DB -->
+            <rect x="580" y="200" width="190" height="150" fill="#ffffff" stroke="#10b981" stroke-width="2" rx="6" />
+            <text x="675" y="222" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" fill="#047857" text-anchor="middle">PERSISTENCE PLANE</text>
+            <rect x="595" y="235" width="160" height="30" fill="#d1fae5" stroke="#6ee7b7" rx="4"/>
+            <text x="675" y="254" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#065f46" text-anchor="middle">PostgreSQL Database (Flyway)</text>
+            <rect x="595" y="272" width="160" height="30" fill="#d1fae5" stroke="#6ee7b7" rx="4"/>
+            <text x="675" y="291" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#065f46" text-anchor="middle">Supabase Row-Level Security</text>
+            <rect x="595" y="308" width="160" height="30" fill="#d1fae5" stroke="#6ee7b7" rx="4"/>
+            <text x="675" y="327" font-family="Segoe UI, sans-serif" font-size="8.5" fill="#065f46" text-anchor="middle">Supabase Storage Bucket</text>
+        </svg>
+        <div class="diagram-caption">Figure 3.1: PrintGuard AI Multi-Tier System Architecture and Inter-Service Communication Topology</div>
+    </div>
+
+    <h2>3.2 Component Responsibilities</h2>
+    <ul>
+        <li><strong>Frontend Client (React/Three.js):</strong> Provides browser-native 3D model visualization, real-time bounding box overlay on webcam feeds, direct serial UART communication to the 3D printer mainboard via Web Serial API, and interactive layer-by-layer G-code inspection.</li>
+        <li><strong>Backend Engine (Spring Boot 3):</strong> Orchestrates business logic, validates and stores print jobs, enforces user ownership, manages PrusaSlicer execution pipelines, handles file downloads/uploads, and broadcasts WebSocket push events.</li>
+        <li><strong>AI Microservice (FastAPI/PyTorch):</strong> Executes YOLOv8 object detection on camera frames with low latency, classifies defects (spaghetti vs normal extrusion), and exposes parametric CAD mesh generation.</li>
+        <li><strong>Persistence Layer (PostgreSQL & Supabase):</strong> Stores transactional job records, audit events, user credentials, and error log entities. Protected by PostgreSQL Row Level Security (RLS) policies.</li>
+        <li><strong>Hardware Execution Layer:</strong> Physical 3D printer (e.g. Ender 3, Prusa i3 MK3S, Voron) driven either directly from the browser via Web Serial API or via OctoPrint over local LAN.</li>
+    </ul>
+
+    <h2>3.3 Autonomous Auto-Pause Interlock Sequence</h2>
+    <div class="diagram-container">
+        <svg viewBox="0 0 760 180" width="100%" height="150" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="760" height="180" fill="#f8fafc" rx="6" />
+            <!-- Step 1 -->
+            <rect x="20" y="30" width="125" height="120" fill="#ffffff" stroke="#0284c7" rx="6" />
+            <text x="82" y="55" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0369a1" text-anchor="middle">1. Frame Capture</text>
+            <text x="82" y="80" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Camera grabs</text>
+            <text x="82" y="95" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">JPEG image frame</text>
+            <text x="82" y="110" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">every 1.5s - 3s</text>
+            <text x="82" y="130" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#0284c7" text-anchor="middle">Webcam / USB</text>
+
+            <!-- Arrow 1 -->
+            <path d="M 145 90 L 175 90" stroke="#0284c7" stroke-width="2" />
+
+            <!-- Step 2 -->
+            <rect x="175" y="30" width="125" height="120" fill="#ffffff" stroke="#8b5cf6" rx="6" />
+            <text x="237" y="55" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#6d28d9" text-anchor="middle">2. YOLOv8 Inference</text>
+            <text x="237" y="80" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">FastAPI runs model</text>
+            <text x="237" y="95" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Detects spaghetti</text>
+            <text x="237" y="110" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Class 0, Conf &gt; 0.35</text>
+            <text x="237" y="130" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#8b5cf6" text-anchor="middle">&lt; 50ms latency</text>
+
+            <!-- Arrow 2 -->
+            <path d="M 300 90 L 330 90" stroke="#8b5cf6" stroke-width="2" />
+
+            <!-- Step 3 -->
+            <rect x="330" y="30" width="125" height="120" fill="#ffffff" stroke="#f59e0b" rx="6" />
+            <text x="392" y="55" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#b45309" text-anchor="middle">3. Error Evaluation</text>
+            <text x="392" y="80" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Consecutive failure</text>
+            <text x="392" y="95" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">counter checked</text>
+            <text x="392" y="110" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">ErrorLog created</text>
+            <text x="392" y="130" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#f59e0b" text-anchor="middle">Database logged</text>
+
+            <!-- Arrow 3 -->
+            <path d="M 455 90 L 485 90" stroke="#f59e0b" stroke-width="2" />
+
+            <!-- Step 4 -->
+            <rect x="485" y="30" width="125" height="120" fill="#ffffff" stroke="#ef4444" rx="6" />
+            <text x="547" y="55" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#b91c1c" text-anchor="middle">4. Pause Interlock</text>
+            <text x="547" y="80" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Job status =&gt; PAUSED</text>
+            <text x="547" y="95" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Emergency pause</text>
+            <text x="547" y="110" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">M25 command sent</text>
+            <text x="547" y="130" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#ef4444" text-anchor="middle">Serial / OctoPrint</text>
+
+            <!-- Arrow 4 -->
+            <path d="M 610 90 L 640 90" stroke="#ef4444" stroke-width="2" />
+
+            <!-- Step 5 -->
+            <rect x="640" y="30" width="100" height="120" fill="#ffffff" stroke="#10b981" rx="6" />
+            <text x="690" y="55" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#047857" text-anchor="middle">5. Alert Dispatched</text>
+            <text x="690" y="80" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">WebSocket</text>
+            <text x="690" y="95" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">alert broadcast</text>
+            <text x="690" y="110" font-family="Segoe UI, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Operator notified</text>
+            <text x="690" y="130" font-family="Segoe UI, sans-serif" font-size="7.5" fill="#10b981" text-anchor="middle">UI Sound & Banner</text>
+        </svg>
+        <div class="diagram-caption">Figure 3.2: Automated AI Defect Detection and Emergency Auto-Pause Interlock Pipeline</div>
+    </div>
+
+    <!-- CHAPTER 4 -->
+    <div class="page-break"></div>
+    <h1>Chapter 4: Complete Project Structure & Repository Tour</h1>
+    <p>
+        The PrintGuard AI codebase follows a clean monorepo architecture. Below is the verified physical directory structure:
+    </p>
+
+    <pre><code>c:\Projects01\AI_3D_Printer├── backend-java/                     # Primary Production Backend Service (Spring Boot 3)
+│   ├── pom.xml                       # Maven build descriptor (Java 21, Spring Boot 3.3.0, Flyway)
+│   ├── Dockerfile                    # Multi-stage production container build (Eclipse Temurin 21)
+│   └── src/
+│       ├── main/
+│       │   ├── java/com/printguard/
+│       │   │   ├── PrintGuardApplication.java   # Spring Boot Application entrypoint
+│       │   │   ├── auth/                        # Security, JWT tokens, Argon2, User entities
+│       │   │   ├── config/                      # SecurityConfig, CORS, WebMvc, DatabaseInit
+│       │   │   ├── dashboard/                   # Dashboard metrics & system statistics
+│       │   │   ├── health/                      # Health check probes & diagnostic endpoints
+│       │   │   ├── jobs/                        # Print jobs, OctoPrint client, Audit logs
+│       │   │   ├── logs/                        # ErrorLog entity, defect logs, alerts
+│       │   │   ├── models/                      # 3D models, GenerationController, ModelController
+│       │   │   ├── settings/                    # User preferences & hardware settings
+│       │   │   ├── slicer/                      # SlicerService (PrusaSlicer CLI execution)
+│       │   │   ├── storage/                     # SupabaseStorageService, local caching
+│       │   │   └── websocket/                   # WebSocketConfig, handlers & event publisher
+│       │   └── resources/
+│       │       ├── application.yml              # Base Spring configuration
+│       │       ├── application-local.yml        # Development profile overrides
+│       │       └── db/migration/                # Flyway SQL migration scripts (V1, V2)
+│       └── test/java/com/printguard/            # 10 Unit and integration test suites
+│
+├── ai-service/                       # FastAPI AI Inference Microservice
+│   ├── app.py                        # FastAPI entrypoint, YOLOv8 detector, geometry endpoint
+│   ├── requirements.txt              # Python dependencies (fastapi, ultralytics, opencv, etc.)
+│   ├── geometry/
+│   │   └── chess_generator.py        # Parametric CAD generator for watertight 3D meshes
+│   └── test_ai_service.py            # Pytest test suite for inference service
+│
+├── ai-model/                         # Computer Vision Neural Checkpoints
+│   ├── best.pt                       # Trained YOLOv8 PyTorch weights (Spaghetti defect detection)
+│   └── ...                           # Training metadata and hyperparameter logs
+│
+├── frontend/                         # Modern Single Page Application (React 18 + Vite)
+│   ├── package.json                  # Node dependencies (React, Three.js, Axios, Lucide)
+│   ├── vite.config.js                # Vite build configuration & proxy rules
+│   ├── index.html                    # HTML5 shell
+│   └── src/
+│       ├── App.jsx                   # Route registration & protected layout wrapper
+│       ├── main.jsx                  # React DOM root hydration
+│       ├── context/
+│       │   └── AuthContext.jsx       # Global authentication state, JWT storage, login/logout
+│       ├── services/
+│       │   └── api.js                # Axios client with interceptors, WebSocket URL builder
+│       ├── components/               # Navbar, Sidebar, ProtectedRoute, Canvas wrappers
+│       └── pages/
+│           ├── Dashboard.jsx         # Telemetry gauges, active jobs, defect alerts
+│           ├── AIMonitoring.jsx      # Live video stream, YOLO bounding boxes, auto-pause toggle
+│           ├── GenerateModel.jsx     # Text-to-3D prompt interface, procedural CAD generator
+│           ├── ImageTo3D.jsx         # Image upload to 3D point cloud & mesh generator
+│           ├── ModelHistory.jsx      # Repository of generated models, downloads, slicing trigger
+│           ├── GCodePreview.jsx      # Three.js interactive 3D toolpath & layer inspector
+│           ├── PrintQueue.jsx        # Print job lifecycle management, queue reordering
+│           ├── PrinterControl.jsx    # Web Serial API direct hardware controller (USB UART)
+│           ├── OctoPrint.jsx         # OctoPrint network bridge integration
+│           ├── Settings.jsx          # Printer profiles, slicing defaults, API keys
+│           ├── Login.jsx             # User authentication form
+│           └── Register.jsx          # New user onboarding & validation
+│
+├── docker-compose.yml                # Multi-container orchestration (DB, Backend, AI, Frontend)
+├── .env.example                      # Complete template of all required environment variables
+├── README.md                         # Project documentation and quickstart instructions
+├── run_showcase.bat                  # Local all-in-one development launch script
+└── stop_showcase.bat                 # Service teardown script
+</code></pre>
+
+    <!-- CHAPTER 5 -->
+    <div class="page-break"></div>
+    <h1>Chapter 5: Features & Functional Workflows</h1>
+    <p>
+        This chapter details every existing feature across the 10 mandated architectural dimensions, tracing the end-to-end
+        data journey from user interaction to hardware output.
+    </p>
+
+    <!-- Feature 1 -->
+    <div class="feature-card">
+        <h3>Feature 1: User Authentication & Role-Based Access Control</h3>
+        <p><strong>1. Description:</strong> Secure registration, login, JWT issuance, token refresh, and user profile management.</p>
+        <p><strong>2. Rationale:</strong> Protects printer hardware, proprietary 3D CAD files, and multi-tenant job queues from unauthorized access.</p>
+        <p><strong>3. User Access:</strong> Routes <code>/login</code> and <code>/register</code>; account settings accessed from user badge in header.</p>
+        <p><strong>4. Frontend:</strong> <code>Login.jsx</code>, <code>Register.jsx</code>, and <code>AuthContext.jsx</code> managing token persistence in <code>localStorage</code>.</p>
+        <p><strong>5. Backend:</strong> <code>AuthController.java</code>, <code>JwtService.java</code>, <code>PasswordService.java</code>, <code>JwtAuthenticationFilter.java</code>.</p>
+        <p><strong>6. Database:</strong> Table <code>auth_user</code> storing hashed passwords, username, email, is_superuser, is_active flags.</p>
+        <p><strong>7. APIs:</strong> <code>POST /api/auth/login</code>, <code>POST /api/auth/register</code>, <code>GET /api/auth/me</code>, <code>POST /api/auth/refresh</code>.</p>
+        <p><strong>8. Validation:</strong> Argon2/jBCrypt password hashing; username uniqueness enforced at database level; JWT signed with HMAC-SHA256.</p>
+        <p><strong>9. Dependencies:</strong> Spring Security Filter Chain; required by all protected API routes.</p>
+        <p><strong>10. Limitations & Improvements:</strong> Refresh token rotation is single-token; add OAuth2 / Social Login (Google/GitHub) in future.</p>
+    </div>
+
+    <!-- Feature 2 -->
+    <div class="feature-card">
+        <h3>Feature 2: Text-to-3D Generative Procedural CAD Engine</h3>
+        <p><strong>1. Description:</strong> Generates watertight 3D manifold meshes (OBJ/STL) from natural language prompts.</p>
+        <p><strong>2. Rationale:</strong> Allows non-engineers to create functional 3D printable objects instantly without complex CAD software.</p>
+        <p><strong>3. User Access:</strong> Route <code>/generate</code> accessible via the navigation sidebar.</p>
+        <p><strong>4. Frontend:</strong> <code>GenerateModel.jsx</code> with prompt input, steps slider, 3D preview canvas, and generation status indicator.</p>
+        <p><strong>5. Backend:</strong> <code>GenerationController.java</code> calling FastAPI <code>/api/geometry/generate</code> with fallback to local Python script.</p>
+        <p><strong>6. Database:</strong> Table <code>generated_models_generatedmodel</code> saving prompt, file_path, status, generation_time, and user_id.</p>
+        <p><strong>7. APIs:</strong> <code>POST /api/generate/text</code>, <code>GET /api/models/{id}</code>, <code>GET /api/models/{id}/file</code>.</p>
+        <p><strong>8. Validation:</strong> Manifoldness check (watertight geometry verification); mesh volume &gt; 0; sanitized filename generation.</p>
+        <p><strong>9. Dependencies:</strong> Python geometry engine (<code>chess_generator.py</code>); Supabase/Local storage for file persistence.</p>
+        <p><strong>10. Limitations & Improvements:</strong> Procedural engine covers chess and geometric primitives; neural Shap-E requires GPU server.</p>
+    </div>
+
+    <!-- Feature 3 -->
+    <div class="feature-card">
+        <h3>Feature 3: PrusaSlicer Headless Slicing Pipeline</h3>
+        <p><strong>1. Description:</strong> Transforms raw 3D meshes (OBJ/STL) into optimized, layer-by-layer G-code toolpaths.</p>
+        <p><strong>2. Rationale:</strong> Automated slicing on the server removes the need for users to install and configure desktop slicers.</p>
+        <p><strong>3. User Access:</strong> "Slice Model" button on any model card in <code>ModelHistory.jsx</code> or upon completing generation.</p>
+        <p><strong>4. Frontend:</strong> Modal dialog in <code>ModelHistory.jsx</code> for selecting layer height (0.15mm - 0.30mm), infill percentage (15% - 100%), and support structures.</p>
+        <p><strong>5. Backend:</strong> <code>SlicerService.java</code> and <code>PrintJobController.java</code> executing PrusaSlicer CLI with configured arguments.</p>
+        <p><strong>6. Database:</strong> Table <code>print_jobs_printjob</code> tracking gcode_path, estimated_time, progress, and status.</p>
+        <p><strong>7. APIs:</strong> <code>POST /api/jobs/create</code> with payload containing model_id, layer_height, and infill.</p>
+        <p><strong>8. Validation:</strong> Slicer process timeout watchdog (90 seconds); G-code output existence and non-zero byte size validation.</p>
+        <p><strong>9. Dependencies:</strong> Installed PrusaSlicer binary on server (Windows <code>prusa-slicer-console.exe</code> or Linux <code>prusa-slicer</code>).</p>
+        <p><strong>10. Limitations & Improvements:</strong> Limited to single-extruder configurations; future support for multi-material (MMU) slicing.</p>
+    </div>
+
+    <!-- Feature 4 -->
+    <div class="feature-card">
+        <h3>Feature 4: Three.js Interactive 3D G-Code Visualizer</h3>
+        <p><strong>1. Description:</strong> Real-time 3D canvas rendering of G-code toolpaths with layer-by-layer scrubbing and travel move analysis.</p>
+        <p><strong>2. Rationale:</strong> Verifies print integrity, overhang angles, and support placement before sending commands to physical hardware.</p>
+        <p><strong>3. User Access:</strong> Route <code>/gcode-preview</code> or clicking "Preview Toolpaths" on any sliced job.</p>
+        <p><strong>4. Frontend:</strong> <code>GCodePreview.jsx</code> using Three.js <code>LineSegments</code>, orbit controls, custom layer slider, and extrusion speed coloring.</p>
+        <p><strong>5. Backend:</strong> <code>StorageController.java</code> streaming G-code files with byte-range support.</p>
+        <p><strong>6. Database:</strong> Read access to <code>print_jobs_printjob</code> to fetch G-code URL.</p>
+        <p><strong>7. APIs:</strong> <code>GET /api/jobs/{id}/gcode</code> or authenticated signed storage URL.</p>
+        <p><strong>8. Validation:</strong> Client-side G-code parser filters invalid coordinate tokens (NaN/Infinity) and verifies extrusion dimensions.</p>
+        <p><strong>9. Dependencies:</strong> Three.js WebGL canvas context.</p>
+        <p><strong>10. Limitations & Improvements:</strong> Large G-code files (&gt; 50MB) can cause browser memory pressure; implement Web Workers for background parsing.</p>
+    </div>
+
+    <!-- Feature 5 -->
+    <div class="feature-card">
+        <h3>Feature 5: Direct Hardware Printer Control via Web Serial API</h3>
+        <p><strong>1. Description:</strong> Browser-native direct USB serial connection to 3D printer mainboards without needing OctoPrint or Raspberry Pi.</p>
+        <p><strong>2. Rationale:</strong> Eliminates extra hardware costs ($50-100 for a Raspberry Pi) and enables instantaneous machine control.</p>
+        <p><strong>3. User Access:</strong> Route <code>/control</code> ("Printer Control" in sidebar).</p>
+        <p><strong>4. Frontend:</strong> <code>PrinterControl.jsx</code> using <code>navigator.serial.requestPort()</code>, <code>ReadableStream</code>, and <code>WritableStream</code>.</p>
+        <p><strong>5. Backend:</strong> Operates entirely peer-to-device from the client; status sync sent to backend via WebSocket.</p>
+        <p><strong>6. Database:</strong> Audit log recorded in <code>print_jobs_auditlog</code> upon critical manual jog or emergency stop actions.</p>
+        <p><strong>7. APIs:</strong> W3C Web Serial API standard; optional REST telemetry sync <code>POST /api/jobs/{id}/telemetry</code>.</p>
+        <p><strong>8. Validation:</strong> Baud rate selection (115200 or 250000); G-code checksum validation; serial port disconnection listeners.</p>
+        <p><strong>9. Dependencies:</strong> Chromium-based browser (Google Chrome, Microsoft Edge, Brave, Opera) with Web Serial support.</p>
+        <p><strong>10. Limitations & Improvements:</strong> Not supported on Firefox or Safari (W3C standard not implemented by Mozilla/Apple); display clear browser compatibility banner.</p>
+    </div>
+
+    <!-- Feature 6 -->
+    <div class="feature-card">
+        <h3>Feature 6: Real-Time AI Computer Vision Defect Monitoring</h3>
+        <p><strong>1. Description:</strong> Continuous video frame analysis using YOLOv8 to detect printing defects (spaghetti, detachment) with autonomous interlock.</p>
+        <p><strong>2. Rationale:</strong> Protects against catastrophic failure, saves filament, and prevents hardware damage when unattended.</p>
+        <p><strong>3. User Access:</strong> Route <code>/monitoring</code> ("AI Monitoring" in sidebar).</p>
+        <p><strong>4. Frontend:</strong> <code>AIMonitoring.jsx</code> rendering HTML5 video element, canvas overlay with bounding boxes, confidence meter, and auto-pause switch.</p>
+        <p><strong>5. Backend:</strong> <code>ErrorLogController.java</code> and <code>OctoPrintService.java</code> coordinating automatic pause actions.</p>
+        <p><strong>6. Database:</strong> Table <code>error_logs_errorlog</code> storing error_type, confidence, action_taken, timestamp, and frame_image.</p>
+        <p><strong>7. APIs:</strong> <code>POST /api/inference/detect-frame</code>, <code>GET /api/logs/errors</code>, <code>POST /api/jobs/{id}/pause</code>.</p>
+        <p><strong>8. Validation:</strong> Confidence threshold filtering (&gt; 0.35); allow-list filtering preventing spurious food classes from triggering false alarms.</p>
+        <p><strong>9. Dependencies:</strong> FastAPI microservice running <code>ai-model/best.pt</code> with OpenCV and PyTorch.</p>
+        <p><strong>10. Limitations & Improvements:</strong> Single-camera viewpoint; add multi-angle camera support and temporal smoothing across consecutive frames.</p>
+    </div>
+
+    <!-- CHAPTER 6 -->
+    <div class="page-break"></div>
+    <h1>Chapter 6: Backend Engineering & REST/WebSocket API Reference</h1>
+    <h2>6.1 Backend Architecture & Layered Design</h2>
+    <p>
+        The backend is developed in Java 21 using Spring Boot 3.3.0. It follows a strict 4-layer architecture:
+    </p>
+    <ul>
+        <li><strong>Controller Layer:</strong> Handles HTTP request serialization, path variables, query parameters, and security context extraction.</li>
+        <li><strong>Service Layer:</strong> Encapsulates business logic, file system operations, PrusaSlicer process execution, and external REST calls.</li>
+        <li><strong>Repository Layer:</strong> Spring Data JPA interfaces extending <code>JpaRepository</code> with custom derived queries.</li>
+        <li><strong>Entity Layer:</strong> JPA entities annotated with Hibernate mappings, cascading relationships, and table constraints.</li>
+    </ul>
+
+    <h2>6.2 Verified REST API Endpoints</h2>
+    <table>
+        <thead>
+            <tr><th>HTTP Method</th><th>Path</th><th>Auth</th><th>Request Body / Params</th><th>Success Response</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>POST</code></td><td><code>/api/auth/register</code></td><td>Public</td><td><code>{"username": "...", "password": "...", "email": "..."}</code></td><td><code>201 Created</code> + User details</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/auth/login</code></td><td>Public</td><td><code>{"username": "...", "password": "..."}</code></td><td><code>200 OK</code> + Access token</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/auth/me</code></td><td>Bearer JWT</td><td>None</td><td><code>200 OK</code> + Current user info</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/auth/refresh</code></td><td>Public</td><td><code>{"refresh": "..."}</code></td><td><code>200 OK</code> + New access token</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/models</code></td><td>Bearer JWT</td><td>None</td><td><code>200 OK</code> + Array of User's models</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/models/{id}</code></td><td>Bearer JWT</td><td>Path variable: <code>id</code></td><td><code>200 OK</code> + Model metadata</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/models/{id}/download</code></td><td>Bearer JWT</td><td>Path variable: <code>id</code></td><td><code>200 OK</code> + Binary OBJ/STL attachment</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/models/{id}/file</code></td><td>Bearer JWT</td><td>Path variable: <code>id</code></td><td><code>200 OK</code> + Binary mesh for 3D viewer</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/generate/text</code></td><td>Bearer JWT</td><td><code>{"prompt": "...", "steps": 32}</code></td><td><code>201 Created</code> + Generated model record</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/generate/image</code></td><td>Bearer JWT</td><td>Multipart: <code>image</code> (File), <code>steps</code></td><td><code>201 Created</code> + Generated model record</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/jobs</code></td><td>Bearer JWT</td><td>Query: <code>status</code> (optional)</td><td><code>200 OK</code> + Array of print jobs</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/jobs/create</code></td><td>Bearer JWT</td><td><code>{"model_id": 1, "layer_height": 0.2}</code></td><td><code>201 Created</code> + Print job with G-code</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/jobs/{id}/start</code></td><td>Bearer JWT</td><td>Path variable: <code>id</code></td><td><code>200 OK</code> + Job status updated to printing</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/jobs/{id}/pause</code></td><td>Bearer JWT</td><td>Path variable: <code>id</code></td><td><code>200 OK</code> + Job status updated to paused</td></tr>
+            <tr><td><code>POST</code></td><td><code>/api/jobs/{id}/cancel</code></td><td>Bearer JWT</td><td>Path variable: <code>id</code></td><td><code>200 OK</code> + Job status updated to cancelled</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/dashboard/metrics</code></td><td>Bearer JWT</td><td>None</td><td><code>200 OK</code> + Active jobs, error counts, stats</td></tr>
+            <tr><td><code>GET</code></td><td><code>/api/logs/errors</code></td><td>Bearer JWT</td><td>Query: <code>job_id</code> (optional)</td><td><code>200 OK</code> + Array of defect logs</td></tr>
+            <tr><td><code>GET</code></td><td><code>/actuator/health</code></td><td>Public</td><td>None</td><td><code>200 OK</code> + <code>{"status": "UP"}</code></td></tr>
+        </tbody>
+    </table>
+
+    <h2>6.3 WebSocket Real-Time Telemetry Endpoints</h2>
+    <table>
+        <thead>
+            <tr><th>WebSocket Route</th><th>Protocol</th><th>Direction</th><th>Payload Description</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>/ws/jobs</code></td><td>WSS / WS</td><td>Server -&gt; Client</td><td>Real-time print progress (%), layer index, elapsed time, nozzle/bed temperature</td></tr>
+            <tr><td><code>/ws/generation</code></td><td>WSS / WS</td><td>Server -&gt; Client</td><td>3D model synthesis progress updates and completion notifications</td></tr>
+            <tr><td><code>/ws/dashboard</code></td><td>WSS / WS</td><td>Server -&gt; Client</td><td>Aggregated system status, printer connection state, defect alert notifications</td></tr>
+        </tbody>
+    </table>
+
+    <!-- CHAPTER 7 -->
+    <div class="page-break"></div>
+    <h1>Chapter 7: Frontend Architecture, State Management & Hardware Serial</h1>
+    <h2>7.1 React Application Structure & Router Configuration</h2>
+    <p>
+        The frontend is constructed as a high-performance single page application (SPA) using React 18 and Vite.
+        Routing is managed declaratively via <code>react-router-dom</code> inside <code>frontend/src/App.jsx</code>:
+    </p>
+
+    <table>
+        <thead>
+            <tr><th>URL Route</th><th>Component</th><th>Auth Guard</th><th>Primary Purpose</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>/login</code></td><td><code>Login.jsx</code></td><td>Public</td><td>User credential authentication and token acquisition</td></tr>
+            <tr><td><code>/register</code></td><td><code>Register.jsx</code></td><td>Public</td><td>New user account registration and validation</td></tr>
+            <tr><td><code>/</code></td><td><code>Dashboard.jsx</code></td><td>Protected</td><td>System overview, active print job, defect alerts, telemetry gauges</td></tr>
+            <tr><td><code>/generate</code></td><td><code>GenerateModel.jsx</code></td><td>Protected</td><td>Text-to-3D prompt submission and interactive 3D model preview</td></tr>
+            <tr><td><code>/image-to-3d</code></td><td><code>ImageTo3D.jsx</code></td><td>Protected</td><td>Image upload and 3D point cloud / mesh reconstruction</td></tr>
+            <tr><td><code>/history</code></td><td><code>ModelHistory.jsx</code></td><td>Protected</td><td>3D model library, file downloads, PrusaSlicer execution trigger</td></tr>
+            <tr><td><code>/gcode-preview</code></td><td><code>GCodePreview.jsx</code></td><td>Protected</td><td>Three.js 3D toolpath viewer and layer-by-layer scrubber</td></tr>
+            <tr><td><code>/queue</code></td><td><code>PrintQueue.jsx</code></td><td>Protected</td><td>Print job management, start, pause, resume, and cancellation</td></tr>
+            <tr><td><code>/monitoring</code></td><td><code>AIMonitoring.jsx</code></td><td>Protected</td><td>Real-time camera stream with live YOLO defect detection overlays</td></tr>
+            <tr><td><code>/control</code></td><td><code>PrinterControl.jsx</code></td><td>Protected</td><td>Web Serial API direct USB hardware control (motors, heaters, console)</td></tr>
+            <tr><td><code>/octoprint</code></td><td><code>OctoPrint.jsx</code></td><td>Protected</td><td>OctoPrint server connection, status monitoring, and remote control</td></tr>
+            <tr><td><code>/settings</code></td><td><code>Settings.jsx</code></td><td>Protected</td><td>Hardware profiles, slicing parameters, and API configuration</td></tr>
+        </tbody>
+    </table>
+
+    <h2>7.2 Web Serial API Direct Printer Communication Protocol</h2>
+    <p>
+        The <code>PrinterControl.jsx</code> component communicates directly with the printer's 8-bit or 32-bit microcontroller
+        (e.g., ATmega2560, STM32, RP2040) over USB serial UART:
+    </p>
+    <pre><code>// 1. Request user permission to connect to USB serial device
+const port = await navigator.serial.requestPort();
+await port.open({{ baudRate: 115200 }});
+
+// 2. Continuous reader loop decoding printer response stream
+const textDecoder = new TextDecoderStream();
+const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+const reader = textDecoder.readable.getReader();
+
+while (true) {{
+    const {{ value, done }} = await reader.read();
+    if (done) break;
+    // Parse temperature reports: "ok T:215.4 /215.0 B:60.1 /60.0"
+    parsePrinterFeedback(value);
+}}
+
+// 3. Command writer sending G-code instructions
+const encoder = new TextEncoder();
+const writer = port.writable.getWriter();
+await writer.write(encoder.encode("G28\n")); // Auto-home all axes
+writer.releaseLock();
+</code></pre>
+
+    <!-- CHAPTER 8 -->
+    <div class="page-break"></div>
+    <h1>Chapter 8: Database Architecture, Migrations & Supabase RLS Policies</h1>
+    <h2>8.1 Relational Database Schema Design</h2>
+    <p>
+        The database is powered by PostgreSQL (compatible with versions 14 through 17) and version-controlled via Flyway.
+        The initial migration <code>V1__init_schema.sql</code> creates five foundational relational tables:
+    </p>
+
+    <div class="diagram-container">
+        <svg viewBox="0 0 760 300" width="100%" height="220" xmlns="http://www.w3.org/2000/svg">
+            <rect x="0" y="0" width="760" height="300" fill="#f8fafc" rx="6" />
+
+            <!-- Table 1: auth_user -->
+            <rect x="20" y="20" width="180" height="150" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" rx="4" />
+            <rect x="20" y="20" width="180" height="26" fill="#e0f2fe" rx="4" />
+            <text x="110" y="38" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0369a1" text-anchor="middle">auth_user</text>
+            <text x="30" y="60" font-family="Consolas, monospace" font-size="8" fill="#1e293b">PK id : BIGSERIAL</text>
+            <text x="30" y="75" font-family="Consolas, monospace" font-size="8" fill="#1e293b">username : VARCHAR(150)</text>
+            <text x="30" y="90" font-family="Consolas, monospace" font-size="8" fill="#1e293b">password : VARCHAR(128)</text>
+            <text x="30" y="105" font-family="Consolas, monospace" font-size="8" fill="#1e293b">email : VARCHAR(254)</text>
+            <text x="30" y="120" font-family="Consolas, monospace" font-size="8" fill="#1e293b">is_superuser : BOOLEAN</text>
+            <text x="30" y="135" font-family="Consolas, monospace" font-size="8" fill="#1e293b">is_staff : BOOLEAN</text>
+            <text x="30" y="150" font-family="Consolas, monospace" font-size="8" fill="#1e293b">date_joined : TIMESTAMPTZ</text>
+
+            <!-- Table 2: generated_models -->
+            <rect x="270" y="20" width="210" height="165" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" rx="4" />
+            <rect x="270" y="20" width="210" height="26" fill="#e0f2fe" rx="4" />
+            <text x="375" y="38" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0369a1" text-anchor="middle">generated_models</text>
+            <text x="280" y="60" font-family="Consolas, monospace" font-size="8" fill="#1e293b">PK id : BIGSERIAL</text>
+            <text x="280" y="75" font-family="Consolas, monospace" font-size="8" fill="#1e293b">FK user_id : BIGINT -&gt; auth_user</text>
+            <text x="280" y="90" font-family="Consolas, monospace" font-size="8" fill="#1e293b">prompt : TEXT</text>
+            <text x="280" y="105" font-family="Consolas, monospace" font-size="8" fill="#1e293b">file_path : VARCHAR(500)</text>
+            <text x="280" y="120" font-family="Consolas, monospace" font-size="8" fill="#1e293b">generation_time : DOUBLE</text>
+            <text x="280" y="135" font-family="Consolas, monospace" font-size="8" fill="#1e293b">status : VARCHAR(20)</text>
+            <text x="280" y="150" font-family="Consolas, monospace" font-size="8" fill="#1e293b">source_type : VARCHAR(10)</text>
+            <text x="280" y="165" font-family="Consolas, monospace" font-size="8" fill="#1e293b">created_at : TIMESTAMPTZ</text>
+
+            <!-- Table 3: print_jobs -->
+            <rect x="540" y="20" width="200" height="165" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" rx="4" />
+            <rect x="540" y="20" width="200" height="26" fill="#e0f2fe" rx="4" />
+            <text x="640" y="38" font-family="Segoe UI, sans-serif" font-size="10" font-weight="bold" fill="#0369a1" text-anchor="middle">print_jobs</text>
+            <text x="550" y="60" font-family="Consolas, monospace" font-size="8" fill="#1e293b">PK id : BIGSERIAL</text>
+            <text x="550" y="75" font-family="Consolas, monospace" font-size="8" fill="#1e293b">FK model_id : BIGINT -&gt; models</text>
+            <text x="550" y="90" font-family="Consolas, monospace" font-size="8" fill="#1e293b">status : VARCHAR(20)</text>
+            <text x="550" y="105" font-family="Consolas, monospace" font-size="8" fill="#1e293b">gcode_path : VARCHAR(500)</text>
+            <text x="550" y="120" font-family="Consolas, monospace" font-size="8" fill="#1e293b">estimated_time : INTEGER</text>
+            <text x="550" y="135" font-family="Consolas, monospace" font-size="8" fill="#1e293b">progress : INTEGER</text>
+            <text x="550" y="150" font-family="Consolas, monospace" font-size="8" fill="#1e293b">auto_pause_enabled : BOOLEAN</text>
+            <text x="550" y="165" font-family="Consolas, monospace" font-size="8" fill="#1e293b">created_at : TIMESTAMPTZ</text>
+
+            <!-- Table 4: error_logs -->
+            <rect x="540" y="205" width="200" height="85" fill="#ffffff" stroke="#ef4444" stroke-width="1.5" rx="4" />
+            <rect x="540" y="205" width="200" height="24" fill="#fee2e2" rx="4" />
+            <text x="640" y="221" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="bold" fill="#b91c1c" text-anchor="middle">error_logs</text>
+            <text x="550" y="243" font-family="Consolas, monospace" font-size="8" fill="#1e293b">PK id : BIGSERIAL</text>
+            <text x="550" y="258" font-family="Consolas, monospace" font-size="8" fill="#1e293b">FK print_job_id : BIGINT</text>
+            <text x="550" y="273" font-family="Consolas, monospace" font-size="8" fill="#1e293b">error_type : VARCHAR(30)</text>
+            <text x="550" y="285" font-family="Consolas, monospace" font-size="8" fill="#1e293b">confidence : DOUBLE PRECISION</text>
+
+            <!-- Table 5: audit_logs -->
+            <rect x="20" y="205" width="180" height="85" fill="#ffffff" stroke="#475569" stroke-width="1.5" rx="4" />
+            <rect x="20" y="205" width="180" height="24" fill="#f1f5f9" rx="4" />
+            <text x="110" y="221" font-family="Segoe UI, sans-serif" font-size="9.5" font-weight="bold" fill="#334155" text-anchor="middle">audit_logs</text>
+            <text x="30" y="243" font-family="Consolas, monospace" font-size="8" fill="#1e293b">PK id : BIGSERIAL</text>
+            <text x="30" y="258" font-family="Consolas, monospace" font-size="8" fill="#1e293b">FK user_id : BIGINT</text>
+            <text x="30" y="273" font-family="Consolas, monospace" font-size="8" fill="#1e293b">action : VARCHAR(255)</text>
+            <text x="30" y="285" font-family="Consolas, monospace" font-size="8" fill="#1e293b">timestamp : TIMESTAMPTZ</text>
+
+            <!-- Relationship lines -->
+            <path d="M 200 95 L 270 95" stroke="#0284c7" stroke-width="1.5" />
+            <path d="M 480 95 L 540 95" stroke="#0284c7" stroke-width="1.5" />
+            <path d="M 640 185 L 640 205" stroke="#ef4444" stroke-width="1.5" />
+            <path d="M 110 170 L 110 205" stroke="#475569" stroke-width="1.5" />
+        </svg>
+        <div class="diagram-caption">Figure 8.1: Entity Relationship Diagram (ERD) detailing Primary, Foreign Keys, and Cascade Relationships</div>
+    </div>
+
+    <h2>8.2 Supabase Row Level Security (RLS) Implementation</h2>
+    <p>
+        Flyway migration <code>V2__enable_rls_and_least_privilege.sql</code> enforces multi-tenant security directly inside PostgreSQL:
+    </p>
+    <ul>
+        <li><code>ALTER TABLE auth_user ENABLE ROW LEVEL SECURITY;</code></li>
+        <li><code>ALTER TABLE generated_models_generatedmodel ENABLE ROW LEVEL SECURITY;</code></li>
+        <li><code>ALTER TABLE print_jobs_printjob ENABLE ROW LEVEL SECURITY;</code></li>
+        <li><code>ALTER TABLE error_logs_errorlog ENABLE ROW LEVEL SECURITY;</code></li>
+        <li><code>ALTER TABLE print_jobs_auditlog ENABLE ROW LEVEL SECURITY;</code></li>
+    </ul>
+    <p>
+        Policies ensure that non-superusers can only SELECT, UPDATE, or DELETE records where <code>user_id = auth.uid()</code>
+        or where parent print jobs belong to the authenticated principal.
+    </p>
+
+    <!-- CHAPTER 9 -->
+    <div class="page-break"></div>
+    <h1>Chapter 9: Installation, Environment Configuration & Local Execution</h1>
+    <h2>9.1 System Prerequisites</h2>
+    <ul>
+        <li><strong>Operating System:</strong> Windows 10/11, Ubuntu 22.04 LTS, or macOS Sonoma.</li>
+        <li><strong>Java Development Kit:</strong> Eclipse Temurin or OpenJDK 21 LTS installed and set in <code>JAVA_HOME</code>.</li>
+        <li><strong>Node.js & npm:</strong> Node.js 18.x or 20.x LTS with npm 9+.</li>
+        <li><strong>Python:</strong> Python 3.10, 3.11, or 3.12 (virtualenv recommended).</li>
+        <li><strong>Database:</strong> PostgreSQL 15+ locally or an active Supabase cloud project.</li>
+        <li><strong>Slicing Utility:</strong> PrusaSlicer (configured in PATH or via <code>SLICER_PATH</code> environment variable).</li>
+    </ul>
+
+    <h2>9.2 Step-by-Step Installation Commands</h2>
+    <h3>Step 1: Clone Repository & Configure Environment</h3>
+    <pre><code>git clone https://github.com/Warcraft433/AI_3D_Printer.git
+cd AI_3D_Printer
+cp .env.example .env
+# Edit .env with your PostgreSQL credentials, Supabase keys, and JWT secret</code></pre>
+
+    <h3>Step 2: Initialize & Launch Spring Boot Backend</h3>
+    <pre><code>cd backend-java
+# Compile, run Flyway migrations, and launch on port 8080
+./mvnw.cmd spring-boot:run -Dspring-boot.run.profiles=local
+# On Linux/macOS: ./mvnw spring-boot:run -Dspring-boot.run.profiles=local</code></pre>
+
+    <h3>Step 3: Launch FastAPI AI Inference Microservice</h3>
+    <pre><code># From project root
+python -m venv venv
+.\venv\Scripts\activate      # On Linux/macOS: source venv/bin/activate
+pip install -r ai-service/requirements.txt
+python -m uvicorn ai-service.app:app --host 127.0.0.1 --port 8001 --reload</code></pre>
+
+    <h3>Step 4: Launch React Frontend Application</h3>
+    <pre><code>cd frontend
+npm install
+npm run dev
+# The Vite development server launches at http://localhost:5173</code></pre>
+
+    <h2>9.3 Verification Checklist</h2>
+    <table>
+        <thead>
+            <tr><th>Component</th><th>Verification Command / URL</th><th>Expected Output</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Backend API</td><td><code>curl http://localhost:8080/actuator/health</code></td><td><code>{{"status": "UP"}}</code></td></tr>
+            <tr><td>AI Microservice</td><td><code>curl http://127.0.0.1:8001/api/inference/health</code></td><td><code>{{"status": "UP", "service": "printguard-ai"}}</code></td></tr>
+            <tr><td>Frontend UI</td><td>Open <code>http://localhost:5173</code> in Google Chrome</td><td>Login / Register page renders cleanly</td></tr>
+        </tbody>
+    </table>
+
+    <!-- CHAPTER 10 -->
+    <div class="page-break"></div>
+    <h1>Chapter 10: Configuration Matrix & Environment Variables</h1>
+    <p>
+        The table below provides a comprehensive reference of all supported environment variables across services:
+    </p>
+
+    <table>
+        <thead>
+            <tr><th>Variable Name</th><th>Default Value</th><th>Required</th><th>Purpose & Safe Usage</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>PORT</code></td><td><code>8080</code></td><td>No</td><td>HTTP port for the Spring Boot backend server.</td></tr>
+            <tr><td><code>SPRING_DATASOURCE_URL</code></td><td><code>jdbc:postgresql://localhost:5432/printguard</code></td><td>Yes</td><td>JDBC connection string for PostgreSQL database.</td></tr>
+            <tr><td><code>SPRING_DATASOURCE_USERNAME</code></td><td><code>printguard_app</code></td><td>Yes</td><td>Database username with schema privileges.</td></tr>
+            <tr><td><code>SPRING_DATASOURCE_PASSWORD</code></td><td>None (placeholder)</td><td>Yes</td><td>Database password. Never commit real credentials.</td></tr>
+            <tr><td><code>PRINTGUARD_JWT_SECRET</code></td><td>Built-in dev default</td><td>Prod Only</td><td>HMAC-SHA256 256-bit secret key used to sign JWT tokens.</td></tr>
+            <tr><td><code>PRINTGUARD_JWT_EXPIRATION_MS</code></td><td><code>86400000</code> (24h)</td><td>No</td><td>Access token validity lifetime in milliseconds.</td></tr>
+            <tr><td><code>AI_SERVICE_URL</code></td><td><code>http://127.0.0.1:8001</code></td><td>No</td><td>Internal REST URL of the FastAPI AI microservice.</td></tr>
+            <tr><td><code>AI_SERVICE_API_KEY</code></td><td>Empty (dev bypass)</td><td>Prod Only</td><td>Internal service authentication token passed in <code>X-Internal-Token</code>.</td></tr>
+            <tr><td><code>SLICER_PATH</code></td><td>Auto-detected</td><td>No</td><td>Absolute path to the PrusaSlicer CLI executable.</td></tr>
+            <tr><td><code>STORAGE_TYPE</code></td><td><code>supabase</code></td><td>No</td><td>Storage backend: <code>supabase</code> (cloud) or <code>local</code> (filesystem).</td></tr>
+            <tr><td><code>SUPABASE_URL</code></td><td>Supabase project URL</td><td>If Cloud</td><td>Base URL of your Supabase project.</td></tr>
+            <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>None (secret)</td><td>If Cloud</td><td>Service role key for administrative storage uploads.</td></tr>
+            <tr><td><code>VITE_API_URL</code></td><td><code>http://localhost:8080</code></td><td>Frontend</td><td>Base backend API URL consumed by Axios.</td></tr>
+        </tbody>
+    </table>
+
+    <!-- CHAPTER 11 -->
+    <div class="page-break"></div>
+    <h1>Chapter 11: Testing Strategy, Quality Assurance & Debugging</h1>
+    <h2>11.1 Automated Test Suites</h2>
+    <p>
+        PrintGuard AI maintains comprehensive test coverage across both the Spring Boot backend and the FastAPI AI service:
+    </p>
+    <table>
+        <thead>
+            <tr><th>Test Suite Class</th><th>Framework</th><th>Target Component</th><th>Key Invariants Tested</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>AuthControllerTest.java</code></td><td>JUnit 5 / MockMvc</td><td><code>AuthController</code></td><td>Registration, login, password hashing, JWT claims</td></tr>
+            <tr><td><code>SecurityIntegrationTest.java</code></td><td>Spring Boot Test</td><td><code>SecurityConfig</code></td><td>Unauthenticated request rejection (401), CORS headers</td></tr>
+            <tr><td><code>AiServiceSecurityTest.java</code></td><td>JUnit 5</td><td>FastAPI Bridge</td><td>Internal token enforcement, production auth rejection</td></tr>
+            <tr><td><code>DashboardControllerTest.java</code></td><td>JUnit 5 / MockMvc</td><td><code>DashboardController</code></td><td>Metrics calculation, error rate aggregation</td></tr>
+            <tr><td><code>HealthControllerTest.java</code></td><td>JUnit 5 / MockMvc</td><td><code>HealthController</code></td><td>Liveness and readiness probe status codes</td></tr>
+            <tr><td><code>PrintJobControllerTest.java</code></td><td>JUnit 5 / MockMvc</td><td><code>PrintJobController</code></td><td>Job creation, status transitions, auto-pause trigger</td></tr>
+            <tr><td><code>GenerationControllerTest.java</code></td><td>JUnit 5 / MockMvc</td><td><code>GenerationController</code></td><td>Prompt validation, procedural CAD fallback execution</td></tr>
+            <tr><td><code>SlicerServiceTest.java</code></td><td>JUnit 5</td><td><code>SlicerService</code></td><td>CLI arguments generation, profile resolution</td></tr>
+            <tr><td><code>StorageSecurityCrossUserTest.java</code></td><td>Spring Boot Test</td><td><code>StorageService</code></td><td>Cross-user file access prevention (403 Forbidden)</td></tr>
+            <tr><td><code>SupabaseStorageServiceTest.java</code></td><td>JUnit 5</td><td><code>SupabaseStorageService</code></td><td>Bucket upload, public/private URL resolution</td></tr>
+            <tr><td><code>test_ai_service.py</code></td><td>Pytest / TestClient</td><td><code>ai-service/app.py</code></td><td>Frame decoding, bounding box parsing, confidence gating</td></tr>
+        </tbody>
+    </table>
+
+    <h2>11.2 Test Execution Commands</h2>
+    <pre><code># Run all Java Backend tests
+cd backend-java
+./mvnw.cmd test
+
+# Run Python AI service tests
+cd ai-service
+pytest test_ai_service.py -v</code></pre>
+
+    <!-- CHAPTER 12 -->
+    <div class="page-break"></div>
+    <h1>Chapter 12: Deployment Architecture & Cloud Production Setup</h1>
+    <h2>12.1 Containerized Deployment via Docker Compose</h2>
+    <p>
+        The repository includes a production-grade <code>docker-compose.yml</code> file orchestrating the multi-service deployment:
+    </p>
+    <ul>
+        <li><strong>postgres:</strong> PostgreSQL 16 image with persistent volume mapping to <code>postgres_data</code>.</li>
+        <li><strong>backend:</strong> Multi-stage build packaging Eclipse Temurin 21 and the Spring Boot fat JAR.</li>
+        <li><strong>ai-service:</strong> Python 3.11 slim container with PyTorch, OpenCV, and FastAPI.</li>
+        <li><strong>frontend:</strong> Nginx reverse-proxy serving the Vite production bundle (<code>dist/</code>).</li>
+    </ul>
+
+    <h2>12.2 Production Container Build Command</h2>
+    <pre><code># Build and launch entire production cluster in background
+docker-compose up --build -d
+
+# Inspect running container status
+docker-compose ps</code></pre>
+
+    <!-- CHAPTER 13 -->
+    <div class="page-break"></div>
+    <h1>Chapter 13: Security Architecture, Authentication & Fail-Safe Controls</h1>
+    <h2>13.1 Defense-in-Depth Security Model</h2>
+    <ul>
+        <li><strong>Cryptographic Password Protection:</strong> Passwords are never stored in plain text. Argon2id / jBCrypt hashes with adaptive salt prevent dictionary and rainbow-table attacks.</li>
+        <li><strong>Stateless JWT Authentication:</strong> HMAC-SHA256 tokens contain user ID and expiration claims. The server signs each token with <code>PRINTGUARD_JWT_SECRET</code>.</li>
+        <li><strong>Internal Microservice Tokens:</strong> The FastAPI AI service enforces an internal secret token (<code>X-Internal-Token</code>) in production environments to prevent unauthorized inference invocation.</li>
+        <li><strong>PostgreSQL Row Level Security (RLS):</strong> The database layer strictly validates that queries only operate on data owned by the authenticated tenant.</li>
+        <li><strong>Physical Hardware Fail-Safe Interlock:</strong> When defect confidence exceeds threshold, the software automatically triggers printer pause to eliminate fire hazards and filament waste.</li>
+    </ul>
+
+    <!-- CHAPTER 14 -->
+    <div class="page-break"></div>
+    <h1>Chapter 14: Known Issues, Technical Debt & Mitigation Table</h1>
+    <table>
+        <thead>
+            <tr><th>ID</th><th>Description</th><th>Component</th><th>Root Cause</th><th>Impact</th><th>Priority</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>ISS-01</td><td>Shap-E neural checkpoint requires heavy GPU VRAM</td><td><code>ai-service</code></td><td>Deep learning diffusion model needs 8GB+ VRAM not present on local CPU</td><td>Falls back to procedural CAD / demo mesh</td><td>Medium</td><td>Documented Fallback Active</td></tr>
+            <tr><td>ISS-02</td><td>Web Serial API unsupported on Firefox/Safari</td><td><code>frontend</code></td><td>Mozilla and Apple have not implemented the W3C Web Serial specification</td><td>Users on Safari/Firefox cannot use direct USB</td><td>Medium</td><td>Browser Detection Notice Added</td></tr>
+            <tr><td>ISS-03</td><td>Large G-code parsing causes UI frame drops</td><td><code>GCodePreview.jsx</code></td><td>Parsing &gt; 500,000 lines runs on the main browser thread</td><td>Temporary 1-2s UI freeze during file load</td><td>Low</td><td>Web Worker Offload Planned</td></tr>
+            <tr><td>ISS-04</td><td>Single-camera defect occlusion</td><td><code>AIMonitoring.jsx</code></td><td>Single fixed webcam angle can have hotend occlusion</td><td>Defects behind the extruder block are hidden</td><td>Low</td><td>Multi-Camera Architecture Planned</td></tr>
+        </tbody>
+    </table>
+
+    <!-- CHAPTER 15 -->
+    <div class="page-break"></div>
+    <h1>Chapter 15: Future Development Roadmap & Strategic Enhancements</h1>
+    <h2>15.1 Short-Term Milestones (Q1-Q2 2027)</h2>
+    <ul>
+        <li><strong>Dedicated Cloud GPU Worker for Shap-E:</strong> Connect a Celery/Redis background worker hosted on AWS EC2 G4dn or RunPod to execute full neural text-to-3D diffusion inference.</li>
+        <li><strong>Web Worker Toolpath Parser:</strong> Move Three.js G-code line decoding to an asynchronous background worker thread for 60 FPS performance on 100MB+ files.</li>
+        <li><strong>OAuth2 / SSO Integration:</strong> Add Google and GitHub authentication options alongside existing Argon2 username/password login.</li>
+    </ul>
+
+    <h2>15.2 Long-Term Strategic Goals (2027+)</h2>
+    <ul>
+        <li><strong>Multi-Camera Fleet Management:</strong> Support simultaneous monitoring of up to 50 3D printers with centralized defect analytics and automated job scheduling.</li>
+        <li><strong>Resin (SLA/DLP) Printing Pipeline:</strong> Expand slicing and monitoring support to resin vat printers with pixel mask slicing.</li>
+        <li><strong>Mobile Progressive Web App (PWA):</strong> Add offline notifications and push alerts for print job completion and emergency pauses.</li>
+    </ul>
+
+    <!-- CHAPTER 16 -->
+    <div class="page-break"></div>
+    <h1>Chapter 16: Important Code Reference & Critical Coupling Map</h1>
+    <table>
+        <thead>
+            <tr><th>File Path</th><th>Class / Function</th><th>Primary Responsibility</th><th>Coupled Dependents</th><th>Risk of Modification</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><code>JwtService.java</code></td><td><code>generateToken(), extractUsername()</code></td><td>Signs and parses HMAC-SHA256 JWT tokens</td><td><code>JwtAuthenticationFilter, AuthController</code></td><td>High: Invalidates active sessions if secret changes</td></tr>
+            <tr><td><code>SlicerService.java</code></td><td><code>sliceModel()</code></td><td>Executes PrusaSlicer CLI command with parameters</td><td><code>PrintJobController, PrintJobEntity</code></td><td>High: Slicing will fail if CLI flags do not match PrusaSlicer version</td></tr>
+            <tr><td><code>app.py (FastAPI)</code></td><td><code>detect_frame()</code></td><td>Runs YOLOv8 model inference on uploaded image frame</td><td><code>AIMonitoring.jsx, ErrorLogController</code></td><td>High: Changes to detection JSON payload will break UI bounding boxes</td></tr>
+            <tr><td><code>PrinterControl.jsx</code></td><td><code>connectSerial(), sendGCode()</code></td><td>Direct W3C Web Serial connection to printer mainboard</td><td>Physical 3D Printer Hardware</td><td>High: Incorrect G-code commands can cause physical mechanical collisions</td></tr>
+            <tr><td><code>SupabaseStorageService.java</code></td><td><code>storeModelFile(), loadModelContent()</code></td><td>Uploads and retrieves 3D files from cloud bucket</td><td><code>ModelController, GenerationController</code></td><td>Medium: Requires valid Supabase credentials or local cache</td></tr>
+        </tbody>
+    </table>
+
+    <!-- CHAPTER 17 -->
+    <div class="page-break"></div>
+    <h1>Chapter 17: Future Change & Modification Guide (Developer Handbook)</h1>
+    <h2>17.1 Step-by-Step Feature Implementation Protocol</h2>
+    <p>
+        Future software engineers or AI coding agents modifying PrintGuard AI must follow this rigorous change protocol:
+    </p>
+    <ol>
+        <li><strong>Identify Impact Radius:</strong> Determine whether the change affects the Database (Flyway migration required), Backend (Spring Boot entity/controller), AI service (FastAPI endpoint), or Frontend (React component).</li>
+        <li><strong>Preserve Database Integrity:</strong> Never run manual ALTER TABLE commands directly on production. Create a new numbered migration file in <code>backend-java/src/main/resources/db/migration/</code> (e.g., <code>V3__add_new_feature.sql</code>).</li>
+        <li><strong>Maintain Backward Compatibility:</strong> Ensure older REST API response formats remain compatible with existing mobile or web clients.</li>
+        <li><strong>Execute Automated Tests:</strong> Always run <code>./mvnw test</code> and <code>pytest</code> before committing any modifications.</li>
+        <li><strong>Update Documentation:</strong> Reflect API, schema, or configuration variable updates in this Master Documentation.</li>
+    </ol>
+
+    <h2>17.2 Standard Reusable Change Request Template</h2>
+    <pre><code>### Change Request: [Brief Title]
+1. Requested Change: Detailed description of the feature or bugfix.
+2. Current Behavior: How the platform behaves prior to modification.
+3. Expected Behavior: How the platform must behave post-modification.
+4. Affected Components: [ ] Frontend  [ ] Backend  [ ] AI Service  [ ] Database  [ ] Slicer
+5. Implementation Plan: Step-by-step code changes.
+6. Database Migrations: SQL migration script (if schema altered).
+7. Verification & Tests: Specific unit tests and manual steps executed.
+8. Rollback Procedure: Commands to revert changes if regressions occur.
+</code></pre>
+
+    <!-- CHAPTER 18 -->
+    <div class="page-break"></div>
+    <h1>Chapter 18: Project Knowledge Summary (AI Agent Rapid Onboarding)</h1>
+    <div class="callout info">
+        <div class="callout-title">Rapid Context Summary for AI Developers & New Engineers</div>
+        <p>
+            <strong>Project Name:</strong> PrintGuard AI 3D Printer Operating System<br>
+            <strong>Primary Stack:</strong> Java 21 (Spring Boot 3.3.0), Python 3.11 (FastAPI, YOLOv8), React 18 (Vite, Three.js), PostgreSQL 16 (Flyway, Supabase RLS).<br>
+            <strong>Key Entry Points:</strong>
+            Backend: <code>PrintGuardApplication.java</code> |
+            AI Service: <code>ai-service/app.py</code> |
+            Frontend: <code>frontend/src/main.jsx</code><br>
+            <strong>Ports:</strong> Backend = <code>8080</code> | AI Service = <code>8001</code> | Frontend = <code>5173</code> | Database = <code>5432</code><br>
+            <strong>Hardware Control:</strong> In-browser W3C Web Serial API (115200/250000 baud) + OctoPrint REST API client.<br>
+            <strong>Critical Invariant:</strong> Never expose database secrets or API keys. Always maintain watertight manifold geometry before sending models to PrusaSlicer.
+        </p>
+    </div>
+
+</body>
+</html>

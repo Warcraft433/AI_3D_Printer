@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://aws-0-ap-south-1.pooler.supabase.com:5432/postgres?sslmode=require}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres.wlpskpsysnamtmzilpft}
+    password: ${SPRING_DATASOURCE_PASSWORD:f8HaKPBMfD/cy48}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  jpa:
+    open-in-view: true
+    hibernate:
+      # Strictly preserve existing database state: no destructive DDL
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  flyway:
+    # Strictly disabled until the user approves the reviewed schema execution
+    enabled: false
+
+printguard:
+  storage:
+    type: supabase
+    supabase:
+      url: ${SUPABASE_URL:https://wlpskpsysnamtmzilpft.supabase.co}
+      service-key: ${SUPABASE_SERVICE_ROLE_KEY:}
+      bucket: ${SUPABASE_STORAGE_BUCKET:printguard-files}

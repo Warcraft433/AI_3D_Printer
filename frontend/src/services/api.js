@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const getBaseUrl = () => {
-    const rawUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://printguard-backend.onrender.com' : '/api')
+    const rawUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '/api'
     const trimmed = (rawUrl || '/api').replace(/\/+$/, '')
     return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`
 }
@@ -17,6 +17,13 @@ api.interceptors.request.use(
         const token = localStorage.getItem('access') || localStorage.getItem('token')
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
+        }
+        // Let the browser set the boundary parameter automatically for FormData
+        if (config.data instanceof FormData) {
+            delete config.headers['Content-Type']
+            if (config.headers?.delete) {
+                config.headers.delete('Content-Type')
+            }
         }
         return config
     },
@@ -46,7 +53,7 @@ export function getWebSocketUrl(path) {
         const base = import.meta.env.VITE_WS_URL.replace(/\/$/, '')
         return `${base}${cleanPath}`
     }
-    const apiBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://printguard-backend.onrender.com' : '')
+    const apiBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || ''
     if (apiBase && /^https?:\/\//i.test(apiBase)) {
         const base = apiBase.replace(/^http/i, 'ws').replace(/\/api\/?$/, '').replace(/\/+$/, '')
         return `${base}${cleanPath}`
@@ -59,7 +66,7 @@ export function getAuthenticatedUrl(path) {
     if (!path) return ''
     let fullUrl = path
     if (path.startsWith('/')) {
-        const rawBackend = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://printguard-backend.onrender.com' : '')
+        const rawBackend = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || ''
         if (rawBackend && /^https?:\/\//i.test(rawBackend)) {
             const host = rawBackend.replace(/\/api\/?$/, '').replace(/\/+$/, '')
             fullUrl = `${host}${path}`

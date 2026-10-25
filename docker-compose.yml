@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-      - ./printguard-migration-starter/migration_seed.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./legacy/migration/migration_seed.sql:/docker-entrypoint-initdb.d/init.sql:ro
     environment:
       - POSTGRES_DB=printguard
       - POSTGRES_USER=printguard_app
@@ -54,7 +54,7 @@ services:
       - SLICER_PATH=${SLICER_PATH:-/usr/bin/prusa-slicer}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-prod}
     volumes:
-      - ./backend/media:/app/media
+      - ./media:/app/media
       - ./data:/app/data
 
   frontend:

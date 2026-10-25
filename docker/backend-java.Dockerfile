@@ -2,12 +2,12 @@
 FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /build
-COPY printguard-migration-starter/backend-java/pom.xml .
+COPY backend-java/pom.xml .
 # Download dependencies layer
 RUN mvn dependency:go-offline -B
 
 # Build application
-COPY printguard-migration-starter/backend-java/src ./src
+COPY backend-java/src ./src
 RUN mvn package -DskipTests -B
 
 # Linux runtime image with PrusaSlicer (Ubuntu 24.04 LTS Noble)

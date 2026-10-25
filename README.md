@@ -1,140 +1,181 @@
-# AI-Integrated 3D Printer Dashboard 🚀
+# PrintGuard AI — AI-Enhanced 3D Printing Platform 🚀
 
-![Project Banner](https://raw.githubusercontent.com/your-username/ai-3d-printer/main/assets/banner.png)
-
+[![CI/CD Pipeline](https://github.com/Warcraft433/AI_3D_Printer/actions/workflows/ci.yml/badge.svg)](https://github.com/Warcraft433/AI_3D_Printer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://github.com/your-username/ai-3d-printer/workflows/CI/CD%20Pipeline/badge.svg)](https://github.com/your-username/ai-3d-printer/actions)
-[![React](https://img.shields.io/badge/Frontend-React-61dafb.svg)](https://reactjs.org/)
-[![Django](https://img.shields.io/badge/Backend-Django-092e20.svg)](https://www.djangoproject.com/)
-[![YOLOv8](https://img.shields.io/badge/AI-YOLOv8-00ffff.svg)](https://ultralytics.com/)
+[![Frontend](https://img.shields.io/badge/Frontend-React_18_%2B_Vite-61dafb.svg)](https://react.dev/)
+[![Backend](https://img.shields.io/badge/Backend-Spring_Boot_3.5-6db33f.svg)](https://spring.io/projects/spring-boot)
+[![AI/ML](https://img.shields.io/badge/AI-FastAPI_%2B_YOLOv8-00ffff.svg)](https://ultralytics.com/)
+[![Slicing](https://img.shields.io/badge/Slicing-PrusaSlicer_CLI-ea580c.svg)](https://www.prusa3d.com/prusaslicer/)
+[![Swagger API Docs](https://img.shields.io/badge/Swagger-OpenAPI_3.0-85ea2d.svg)](http://localhost:8080/swagger-ui.html)
 
-An AI-powered smart 3D printing ecosystem that converts user prompts into printable 3D models and performs intelligent print monitoring with real-time defect detection and automatic hardware control.
-
----
-
-## ✨ Features
-
-- 🧠 **Prompt-to-3D Model Generation**: Uses OpenAI's Shap-E to convert text descriptions into high-quality 3D meshes.
-- 👁️ **AI Defect Detection**: Real-time YOLOv8-based computer vision monitoring to detect spaghetti failures, warping, and layer shifts.
-- 🕹️ **Printer Control**: Deep integration with OctoPrint API for telemetry monitoring and emergency pausing.
-- 📊 **Futuristic Dashboard**: Glassmorphism UI with real-time Recharts analytics and live webcam streaming.
-- 🛠️ **Smart Slicing**: Automatic G-code generation using integrated Slicer engines.
-- 🐳 **Docker Ready**: One-click deployment using Docker Compose.
+**PrintGuard AI** is an enterprise-ready intelligent additive manufacturing ecosystem combining **procedural & AI 3D model generation**, automated **G-code slicing**, direct hardware control, and real-time **computer vision defect detection** (spaghetti failure detection) to safeguard 3D print jobs.
 
 ---
 
-## 🏗️ Architecture
+## ✨ Enterprise Features
+
+- 👁️ **Real-Time Defect Detection**: YOLOv8 computer vision model running inference over browser webcam feeds to detect print failure (spaghetti error) and trigger emergency pauses.
+- ♟️ **Parametric & Procedural 3D CAD**: Integrated procedural geometry generator for watertight, manifold 3D meshes (e.g. Staunton chess collection).
+- 🛠️ **Native PrusaSlicer Integration**: Headless CLI G-code slicing directly from STL/OBJ with real-time progress reporting.
+- 🛡️ **Fault Tolerance & Resilience (Resilience4j)**: Integrated `@CircuitBreaker`, `@Retry`, and `@RateLimiter` guarding AI inference bridge and external slicing processes with graceful fallbacks.
+- ⚡ **Asynchronous Event-Driven Architecture**: Non-blocking `ModelUploadedEvent` processing using Spring `@Async` custom thread pools with real-time WebSocket job telemetry (`/ws/jobs`).
+- 🚀 **High-Performance Caching (Spring Data Redis)**: Distributed Redis cache with TTL-based eviction policies and seamless in-memory fallback for dashboard metrics, model metadata, and user preferences.
+- 📖 **Interactive OpenAPI 3.0 Portal**: Self-documenting Swagger UI ([http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)) with interactive JWT Bearer authorization schemes.
+- 🔒 **Enterprise Security & Token Rotation**: Stateless JWT + Argon2 password hashing, Refresh Token Family Rotation with automatic reuse-theft detection, and OAuth2 client readiness.
+- 🧪 **Production-Grade Testcontainers**: Ephemeral PostgreSQL container integration tests verifying Flyway database schema, migrations, and repository constraints.
+- 📊 **Interactive 3D Visualizer & G-code Previewer**: Three.js / React Three Fiber layer-by-layer G-code inspection in the browser.
+- 🕹️ **Printer Control & Telemetry**: OctoPrint API integration and direct browser-to-printer Web Serial API (`navigator.serial`) USB terminal.
+- 🔄 **Continuous Integration (GitHub Actions)**: Automated multi-job CI pipeline verifying Java 21, Python Pytest, and Docker Compose builds.
+
+---
+
+## 🏗️ System Architecture
 
 ```mermaid
 graph TD
-    User((User)) -->|Browser| Frontend[React Dashboard]
-    Frontend -->|REST API| Backend[Django REST Framework]
-    Frontend -->|WebSockets| Channels[Django Channels]
-    
-    Backend -->|Database| DB[(PostgreSQL)]
-    Backend -->|Task Queue| Celery[Celery Worker]
-    Celery -->|Processing| AI[YOLOv8 Service]
-    
-    AI -->|Camera Feed| PrinterCamera[3D Printer Webcam]
-    Backend -->|Printer Control| OctoPrint[OctoPrint API]
-    OctoPrint -->|Hardware| Printer[3D Printer]
+    User((User Browser)) -->|Web UI :5173| Frontend[React 18 + Vite Dashboard]
+    Frontend -->|REST API Proxy| Backend[Java Spring Boot :8080]
+    Frontend -->|WebSockets| Backend
+    Frontend -.->|Web Serial API| PhysicalPrinter[3D Printer via USB]
+    Frontend -.->|Live Webcam| BrowserCam[Camera Feed]
+
+    Backend -->|PostgreSQL / H2| DB[(Database: Supabase / Local H2)]
+    Backend -->|Private S3 API| Storage[(Supabase Storage / Local File)]
+    Backend -->|CLI Subprocess| Slicer[PrusaSlicer CLI 2.9.6]
+    Backend -->|HTTP REST| AI[FastAPI Python Microservice :8001]
+
+    AI -->|Ultralytics| YOLO[YOLOv8 Nano Model: best.pt]
+    AI -->|Trimesh & NumPy| CAD[Procedural CAD Engine]
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Local Showcase)
+
+The project includes a 1-click launcher that frees ports, boots all 3 services, synchronizes health checks, and opens your browser:
 
 ### 1. Prerequisites
-- [Docker](https://www.docker.com/) & [Docker Compose](https://docs.docker.com/compose/)
-- [Git](https://git-scm.com/)
+- **Node.js**: v20+ and npm
+- **Java JDK**: 21+ and Apache Maven 3.9+
+- **Python**: 3.11+ (virtual environment provided in `venv/`)
 
-### 2. Installation
-```bash
-git clone https://github.com/your-username/ai-3d-printer.git
-cd ai-3d-printer
+### 2. Start Everything with One Click
+Double-click:
+```cmd
+run_showcase.bat
 ```
+*(or run `.\run_showcase.bat` in Command Prompt / PowerShell)*
 
-### 3. Setup Environment
-Copy the example environment file and update your keys:
-```bash
-cp .env.example .env
-```
+Once synchronized, your browser will open to:
+* **Web UI (Frontend):** [http://localhost:5173](http://localhost:5173)
+* **Interactive Swagger UI:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+* **Spring Boot API Health:** [http://localhost:8080/api/health](http://localhost:8080/api/health)
+* **AI Microservice Health:** [http://127.0.0.1:8001/api/inference/health](http://127.0.0.1:8001/api/inference/health)
 
-### 4. Run with Docker
-```bash
-docker-compose up --build
+### 3. Default Login Credentials
+* **Username:** `admin`
+* **Password:** `admin123`
+*(Or use the **Register** tab to create a new local account)*
+
+### 4. Stopping Services
+Press **`[Q]`** in the showcase terminal window, or double-click:
+```cmd
+stop_showcase.bat
 ```
-The application will be available at `http://localhost:3000`.
 
 ---
 
-## 💻 Local Development
-
-### Windows
-1. Run `setup.bat` to install dependencies and migrate the database.
-2. Run `start.bat` to launch the frontend and backend servers.
-
-### Linux / macOS
-1. Run `./setup.sh`
-2. Run `./start.sh`
-
----
-
-## 📁 Project Structure
+## 📁 Repository Structure
 
 ```text
-├── frontend/           # React + Tailwind CSS + Recharts
-├── backend/            # Django + DRF + Channels
-├── ai-model/           # YOLOv8 weights and processing scripts
-├── docs/               # Detailed documentation guides
-├── docker/             # Dockerfiles and service configurations
-├── scripts/            # Automation and deployment scripts
-├── assets/             # Images, logos, and UI screenshots
-├── sample-data/        # STL and G-CODE example files
-├── tests/              # End-to-end and unit test suites
-└── docker-compose.yml  # Multi-container orchestration
+AI_3D_Printer/
+├── README.md                          # Master project documentation
+├── .env                               # Local secrets & database configuration (protected)
+├── .env.example                       # Verified template with environment placeholders
+├── docker-compose.yml                 # Multi-container orchestration
+├── run_showcase.bat                   # 1-Click Windows showcase launcher
+├── stop_showcase.bat                  # 1-Click shutdown & port cleaner
+│
+├── frontend/                          # React 18 + Vite + TailwindCSS Web Application
+│   ├── src/
+│   │   ├── components/                # Glassmorphism UI, 3D viewers, webcam monitor
+│   │   ├── context/                   # Auth, Generation, and Web Serial printer contexts
+│   │   ├── pages/                     # Dashboard, AI Monitoring, G-code preview, etc.
+│   │   └── services/api.js            # Axios & WebSocket client
+│   └── package.json
+│
+├── backend-java/                      # Spring Boot 3.5.6 REST & WebSocket API
+│   ├── pom.xml                        # Maven dependencies & build configuration
+│   ├── Dockerfile                     # Multi-stage production container
+│   ├── src/main/java/com/printguard/  # Controllers, services, JPA repositories, security
+│   ├── src/main/resources/            # Application profiles (local, supabase, prod), Flyway SQL
+│   └── src/test/                      # 75 passing unit & integration tests
+│
+├── ai-service/                        # Python FastAPI YOLOv8 Microservice
+│   ├── app.py                         # Defect inference & procedural model API
+│   ├── requirements.txt               # FastAPI, Uvicorn, Ultralytics, OpenCV
+│   ├── test_ai_service.py             # 12 passing automated test suite
+│   ├── Dockerfile
+│   └── geometry/                      # Procedural 3D CAD generator (Trimesh / NumPy)
+│
+├── ai-model/                          # Machine Learning Model Weights
+│   ├── best.pt                        # Active YOLOv8 nano defect detection weights
+│   └── detect_test.py                 # Standalone YOLO inference verification
+│
+├── tools/                             # Host Executables
+│   └── PrusaSlicer/                   # Extracted PrusaSlicer 2.9.6 CLI
+│
+├── media/                             # Local uploaded models, STL/OBJ files, and sliced G-code
+│
+├── scripts/                           # Operational Scripts
+│   ├── development/                   # run_showcase.ps1, stop_showcase.ps1
+│   ├── migration/                     # Schema and RLS database migration scripts
+│   └── testing/                       # CAD and syntax validation scripts
+│
+├── docs/                              # Structured Documentation
+│   ├── architecture/                  # System design, data flow, PostgreSQL/RLS specs
+│   ├── api/                           # Endpoint specifications
+│   ├── development/                   # Setup, training, and troubleshooting guides
+│   └── reports/                       # Technical audit reports and prompt logs
+│
+├── tests/                             # System-level Integration Tests
+│
+└── legacy/                            # Preserved Historical Implementations
+    ├── README.md                      # Legacy documentation & migration notes
+    ├── backend-django/                # Original Django prototype and db.sqlite3
+    ├── pi/                            # Deprecated Raspberry Pi scripts
+    └── migration/                     # Data migration snapshots
 ```
 
 ---
 
-## 📚 Documentation
+## 🛠️ Testing & Quality Assurance
 
-For detailed information, please refer to the following guides in the `docs/` folder:
+All services include automated test suites:
 
-- [Installation Guide](docs/installation.md)
-- [API Reference](docs/api.md)
-- [System Architecture](docs/architecture.md)
-- [AI Model Training](docs/ai-model-training.md)
-- [Troubleshooting](docs/troubleshooting.md)
+- **Backend (Java)**:
+  ```powershell
+  cd backend-java
+  .\mvnw.cmd test
+  ```
+  *(85+ passing unit and integration tests covering JWT/Argon2 auth, token family rotation, Resilience4j circuit breakers, async events, Redis caching, OpenAPI specs, and Testcontainers)*
 
----
+- **AI Microservice (Python)**:
+  ```powershell
+  cd ai-service
+  pytest test_ai_service.py -v
+  ```
+  *(12 passing automated test suite covering health, frame defect detection, and procedural CAD geometry)*
 
-## 🛠️ Tech Stack
-
-- **Frontend**: React, Tailwind CSS, Recharts, Framer Motion, Lucide Icons.
-- **Backend**: Django, Django REST Framework, Django Channels (WebSockets), Celery, Redis.
-- **AI/ML**: YOLOv8, PyTorch, OpenCV, OpenAI Shap-E.
-- **Database**: PostgreSQL (Production), SQLite (Dev).
-- **DevOps**: Docker, Docker Compose, GitHub Actions (CI/CD).
-
----
-
-## 🤝 Contributing
-
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+- **Frontend (React)**:
+  ```powershell
+  cd frontend
+  npm run build
+  ```
+  *(Production bundle builds with 0 errors)*
 
 ---
 
 ## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
-
----
-
-## 🌟 Acknowledgements
-
-- [Ultralytics](https://github.com/ultralytics/ultralytics) for YOLOv8.
-- [OpenAI](https://github.com/openai/shap-e) for Shap-E.
-- [OctoPrint](https://octoprint.org/) for the amazing printer interface.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.

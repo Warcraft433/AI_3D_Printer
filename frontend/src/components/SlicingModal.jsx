@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Download, CheckCircle, Printer, Loader2, FileCode, Check, XCircle } from 'lucide-react';
-import api from '../services/api';
+import { Download, CheckCircle, Printer, Loader2, FileCode, Check, XCircle, Layers } from 'lucide-react';
+import api, { getWebSocketUrl } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import GCodePreviewModal from './GCodePreviewModal';
 
 const STATUS_LABELS = {
     slicing_started: 'Initializing Slicer...',
@@ -17,6 +18,7 @@ export default function SlicingModal({ isOpen, onClose, jobId, modelName }) {
     const [progress, setProgress] = useState(0);
     const [error, setError] = useState(null);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [showPreviewModal, setShowPreviewModal] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -26,7 +28,19 @@ export default function SlicingModal({ isOpen, onClose, jobId, modelName }) {
         setProgress(0);
         setError(null);
 
-        const wsUrl = `ws://localhost:8000/ws/print-jobs/${jobId}/`;
+        // Fetch current job status immediately in case slicing completed synchronously
+        api.get(`/print-jobs/${jobId}/`).then(res => {
+            const data = res.data;
+            if (data && data.status) {
+                setStatus(data.status);
+                if (data.status === 'ready_to_print' || data.status === 'completed') setProgress(100);
+                else if (data.status === 'running_prusaslicer') setProgress(60);
+                else if (data.status === 'generating_gcode') setProgress(90);
+                else if (data.status === 'failed') setError(data.error_detail || 'Slicing failed');
+            }
+        }).catch(err => console.error('Status fetch error:', err));
+
+        const wsUrl = getWebSocketUrl(`/ws/print-jobs/${jobId}/`);
         const socket = new WebSocket(wsUrl);
 
         socket.onopen = () => console.log('Slicing WS Connected');
@@ -93,7 +107,7 @@ export default function SlicingModal({ isOpen, onClose, jobId, modelName }) {
     };
 
     const handlePrint = () => {
-        navigate('/queue');
+        navigate('/print-queue');
         onClose();
     };
 
@@ -161,22 +175,37 @@ export default function SlicingModal({ isOpen, onClose, jobId, modelName }) {
 
                 {/* Footer Actions */}
                 {isSuccess && (
-                    <div className="px-6 py-4 bg-white/5 border-t border-white/5 flex gap-3">
+                    <div className="px-6 py-4 bg-white/5 border-t border-white/5 flex gap-3 flex-wrap">
+                        <button
+                            onClick={() => setShowPreviewModal(true)}
+                            className="btn-ghost flex-1 py-3 justify-center text-cyan-400 border-cyan-500/20 hover:bg-cyan-500/10 min-w-[140px]"
+                            title="Inspect layer-by-layer 3D toolpaths"
+                        >
+                            <Layers size={18} />
+                            Preview G-Code
+                        </button>
                         <button
                             onClick={handleDownload}
                             disabled={isDownloading}
-                            className="btn-ghost flex-1 py-3 justify-center text-primary border-primary/20 hover:bg-primary/10"
+                            className="btn-ghost flex-1 py-3 justify-center text-primary border-primary/20 hover:bg-primary/10 min-w-[140px]"
                         >
                             {isDownloading ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
                             Download G-Code
                         </button>
-                        <button onClick={handlePrint} className="btn-primary flex-1 py-3 justify-center shadow-glow">
+                        <button onClick={handlePrint} className="btn-primary flex-1 py-3 justify-center shadow-glow min-w-[140px]">
                             <Printer size={18} />
                             Go to Printer
                         </button>
                     </div>
                 )}
             </div>
+
+            <GCodePreviewModal
+                jobId={jobId}
+                isOpen={showPreviewModal}
+                onClose={() => setShowPreviewModal(false)}
+                initialTitle={modelName}
+            />
         </div>
     );
 }

@@ -2,6 +2,15 @@ import React from "react";
 import { Server, Activity, Globe } from 'lucide-react';
 
 export default function OctoPrint() {
+  const octoprintUrl = import.meta.env.VITE_OCTOPRINT_URL || 'http://localhost:5000';
+  const octoprintHost = (() => {
+    try {
+      return new URL(octoprintUrl).hostname;
+    } catch {
+      return 'localhost';
+    }
+  })();
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -19,7 +28,7 @@ export default function OctoPrint() {
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-xs text-slate-300">
             <Globe size={14} className="text-secondary" />
-            <span>localhost</span>
+            <span>{octoprintHost}</span>
           </div>
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs text-primary animate-pulse">
             <Activity size={14} />
@@ -31,7 +40,7 @@ export default function OctoPrint() {
       <div className="relative w-full h-[calc(100vh-200px)] min-h-[500px] border border-border/50 rounded-2xl overflow-hidden bg-card shadow-2xl group transition-all duration-500 hover:border-primary/20">
         <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
         <iframe
-          src="http://localhost:5000"
+          src={octoprintUrl}
           className="w-full h-full border-none"
           title="OctoPrint"
           allow="fullscreen"

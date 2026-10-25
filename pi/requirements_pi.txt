@@ -1,4 +1,0 @@
-onnxruntime
-requests
-opencv-python-headless
-numpy

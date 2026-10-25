@@ -1,7 +1,7 @@
-# Python / Django
+# Python
 venv/
 .venv/
-__pycache__/
+**/__pycache__/
 *.pyc
 *.pyo
 *.pyd
@@ -11,7 +11,10 @@ db.sqlite3
 *.backup*
 *.mv.db
 data/
+media/
 backend/media/
+legacy/backend-django/media/
+legacy/backend-django/staticfiles/
 backend/staticfiles/
 *.log
 .env
@@ -67,3 +70,8 @@ sample-data/
 .DS_Store
 Thumbs.db
 Desktop.ini
+.local_pids.json
+
+legacy/
+video-generator/temp/
+video-generator/output/

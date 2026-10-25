@@ -6,8 +6,9 @@ from shap_e.diffusion.gaussian_diffusion import diffusion_from_config
 from shap_e.models.download import load_model, load_config
 from shap_e.util.notebooks import decode_latent_mesh
 
-shape_dir = r"C:\Users\warca\Desktop\ShapE_Model_3Dmodel"
-cache_dir = r"C:\Users\warca\Desktop\ShapE_Model_3Dmodel\shap_e_model_cache"
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+shape_dir = os.getenv("SHAPE_PROJECT_DIR", os.path.join(base_dir, "ShapE_Model_3Dmodel"))
+cache_dir = os.getenv("SHAPE_CACHE_DIR", os.path.join(shape_dir, "shap_e_model_cache"))
 sys.path.insert(0, shape_dir)
 os.environ['SHAP_E_CACHE_DIR'] = cache_dir
 

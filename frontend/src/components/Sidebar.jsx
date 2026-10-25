@@ -1,22 +1,23 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import {
     LayoutDashboard, Sparkles, ImageIcon, Folder,
-    Brain, Printer, Settings, ChevronLeft, ChevronRight, Camera
+    Brain, Printer, Settings, ChevronLeft, ChevronRight, Usb, ListOrdered
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const NAV = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/generate', icon: Sparkles, label: 'Generate Model' },
-    { to: '/image-to-3d', icon: ImageIcon, label: 'Image → 3D' },
+    { to: '/generate', icon: Sparkles, label: 'Text to 3D' },
+    { to: '/generate?mode=image', icon: ImageIcon, label: 'Image to 3D' },
     { to: '/history', icon: Folder, label: 'Model History' },
     { to: '/ai-monitoring', icon: Brain, label: 'AI Monitoring' },
-    { to: '/octoprint', icon: Printer, label: 'OctoPrint' },
-    { to: '/print-queue', icon: Printer, label: 'Print Queue' },
+    { to: '/printer-control', icon: Usb, label: 'Printer Control' },
+    { to: '/print-queue', icon: ListOrdered, label: 'Print Queue' },
     { to: '/settings', icon: Settings, label: 'Settings' },
 ]
 
 export default function Sidebar({ collapsed, setCollapsed }) {
+    const location = useLocation()
 
     return (
         <aside className={`flex flex-col bg-card border-r border-border transition-all duration-300 ${collapsed ? 'w-16' : 'w-60'}`}>
@@ -35,22 +36,28 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
             {/* Navigation */}
             <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-                {NAV.map(({ to, icon: Icon, label }) => (
-                    <NavLink
-                        key={to}
-                        to={to}
-                        end={to === '/'}
-                        className={({ isActive }) =>
-                            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group
+                {NAV.map(({ to, icon: Icon, label }) => {
+                    const currentUrl = location.pathname + location.search
+                    const isActive = to.includes('?')
+                        ? currentUrl === to
+                        : (location.pathname === to && (!location.search || location.search === '?mode=text'))
+
+                    return (
+                        <NavLink
+                            key={to}
+                            to={to}
+                            end={to === '/'}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group
                ${isActive
-                                ? 'bg-primary/15 text-primary border border-primary/25 shadow-glow'
-                                : 'text-muted hover:text-white hover:bg-white/5'}`
-                        }
-                    >
-                        <Icon size={18} className="flex-shrink-0" />
-                        {!collapsed && <span>{label}</span>}
-                    </NavLink>
-                ))}
+                                    ? 'bg-primary/15 text-primary border border-primary/25 shadow-glow'
+                                    : 'text-muted hover:text-white hover:bg-white/5'}`
+                            }
+                        >
+                            <Icon size={18} className="flex-shrink-0" />
+                            {!collapsed && <span>{label}</span>}
+                        </NavLink>
+                    )
+                })}
             </nav>
 
             {/* Collapse toggle */}

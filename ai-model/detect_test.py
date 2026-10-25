@@ -6,7 +6,15 @@ import os
 import sys
 import numpy as np
 
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "backend", "best.pt")
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+candidates = [
+    os.path.join(current_dir, "best.pt"),
+    os.path.join(parent_dir, "backend", "best.pt"),
+    os.path.join(current_dir, "best_v2.pt"),
+    os.path.join(current_dir, "best_v1.pt"),
+]
+MODEL_PATH = next((p for p in candidates if os.path.exists(p)), candidates[0])
 
 print("=" * 60)
 print("  AI 3D Printer Dashboard — YOLOv8 Model Validation")

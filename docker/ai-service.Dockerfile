@@ -8,10 +8,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY printguard-migration-starter/ai-service/requirements.txt .
+COPY ai-service/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY printguard-migration-starter/ai-service/ .
+COPY ai-service/ .
 COPY ai-model/ /app/ai-model/
 
 ENV PORT=8001 \

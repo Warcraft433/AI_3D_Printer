@@ -1,20 +1,32 @@
 @echo off
-echo Starting AI-Integrated 3D Printer Setup...
+echo ===================================================
+echo   AI 3D Printer Dashboard - One-Click Setup
+echo ===================================================
+echo.
 
-:: Backend Setup
-echo Setting up Backend...
+:: 1. Backend Setup
+echo [1/3] Setting up Python Virtual Environment...
 cd backend
-python -m venv venv
+if not exist "venv\Scripts\python.exe" (
+    python -m venv venv
+)
 call venv\Scripts\activate
-pip install -r requirements.txt
+echo [2/3] Installing Python dependencies...
+python -m pip install -r requirements.txt
+echo Running database migrations & seeding demo job...
 python manage.py migrate
+python manage.py seed_demo_job
 cd ..
 
-:: Frontend Setup
-echo Setting up Frontend...
+:: 2. Frontend Setup
+echo.
+echo [3/3] Installing Frontend dependencies...
 cd frontend
-npm install
+call npm install
 cd ..
 
-echo Setup Complete! Use start.bat to run the project.
+echo.
+echo ===================================================
+echo   Setup Complete! Run start.bat to launch everything.
+echo ===================================================
 pause

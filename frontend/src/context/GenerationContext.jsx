@@ -2,23 +2,17 @@
  * GenerationContext — global state for Shap-E model generation.
  *
  * This context lives above the router so generation progress (task, state,
- * elapsed timer, error) survives route changes. The component that triggers
- * a generation (GenerateModel / ImageTo3D) sets state here; when the user
- * navigates away and back, the page re-reads this context and the timer /
- * realtime WebSocket updates are already in progress.
- *
- * On first mount we also look for any in-progress backend task (status
- * "processing") so that a browser-refresh can also restore state.
+ * elapsed timer, error) survives route changes. When the user navigates away
+ * and back, the loaded model and timer stay preserved.
  */
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
-import api from '../services/api'
+import api, { getWebSocketUrl } from '../services/api'
 
-// ── context ──────────────────────────────────────────────────────────────────
 const GenerationContext = createContext(null)
 
-// ── helper: build initial sub-state ──────────────────────────────────────────
 const INITIAL_TEXT = () => ({
     task: null,
+    previousTask: null,
     state: 'idle',
     elapsed: 0,
     error: '',
@@ -36,14 +30,10 @@ const INITIAL_IMAGE = () => ({
     steps: 32,
 })
 
-// ── provider ──────────────────────────────────────────────────────────────────
 export function GenerationProvider({ children }) {
-    // ----- text generation state -----
     const [text, setText_] = useState(INITIAL_TEXT())
-    // ----- image generation state -----
     const [image, setImage_] = useState(INITIAL_IMAGE())
 
-    // timer & WS refs
     const textTimer = useRef(null)
     const textWs = useRef(null)
     const imageTimer = useRef(null)
@@ -66,15 +56,17 @@ export function GenerationProvider({ children }) {
         const update = () => {
             const now = Date.now()
             const diff = Math.floor((now - baseTime) / 1000)
-            setText({ elapsed: diff > 0 ? diff : 0 })
+            setText({ elapsed: diff >= 0 ? diff : 0 })
         }
         update()
-        textTimer.current = setInterval(update, 1000)
+        textTimer.current = setInterval(update, 500)
     }, [setText])
 
     const stopTextTimer = useCallback(() => {
-        clearInterval(textTimer.current)
-        textTimer.current = null
+        if (textTimer.current) {
+            clearInterval(textTimer.current)
+            textTimer.current = null
+        }
     }, [])
 
     const startImageTimer = useCallback((startTime) => {
@@ -84,15 +76,17 @@ export function GenerationProvider({ children }) {
         const update = () => {
             const now = Date.now()
             const diff = Math.floor((now - baseTime) / 1000)
-            setImage({ elapsed: diff > 0 ? diff : 0 })
+            setImage({ elapsed: diff >= 0 ? diff : 0 })
         }
         update()
-        imageTimer.current = setInterval(update, 1000)
+        imageTimer.current = setInterval(update, 500)
     }, [setImage])
 
     const stopImageTimer = useCallback(() => {
-        clearInterval(imageTimer.current)
-        imageTimer.current = null
+        if (imageTimer.current) {
+            clearInterval(imageTimer.current)
+            imageTimer.current = null
+        }
     }, [])
 
     const stopTextWS = useCallback(() => {
@@ -113,10 +107,8 @@ export function GenerationProvider({ children }) {
     const startWebSocket = useCallback((modelId, setter, stopTimerFn, wsRef_) => {
         if (wsRef_.current) wsRef_.current.close()
 
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-        const wsHost = apiUrl.replace(/^http/, 'ws')
-
-        const ws = new WebSocket(`${wsHost}/ws/generation/${modelId}/`)
+        const wsUrl = getWebSocketUrl(`/ws/generation/${modelId}/`)
+        const ws = new WebSocket(wsUrl)
         wsRef_.current = ws
 
         ws.onmessage = (event) => {
@@ -152,7 +144,7 @@ export function GenerationProvider({ children }) {
             try {
                 const { data } = await api.get(`/models/${savedId}/`)
                 if (data.status === 'ready') {
-                    setter({ task: data, state: 'done', error: '', elapsed: data.generation_time || 0 })
+                    setter({ task: data, state: 'done', error: '', elapsed: Math.round(data.generation_time || 0) })
                 } else if (data.status === 'failed') {
                     setter({ task: data, state: 'error', error: data.error_detail || 'Generation failed.' })
                 } else {
@@ -176,92 +168,100 @@ export function GenerationProvider({ children }) {
         }
     }, [startWebSocket, startTextTimer, stopTextTimer, startImageTimer, stopImageTimer, stopTextWS, stopImageWS, setText, setImage])
 
-    // ── Reliability Poller: Fallback when WS fails ──────────────────────────
-    useEffect(() => {
-        const poll = async () => {
-            // Check text
-            if (text.state === 'polling' && text.task?.id) {
-                try {
-                    const { data } = await api.get(`/models/${text.task.id}/`)
-                    if (data.status === 'ready') {
-                        stopTextTimer()
-                        setText({ task: data, state: 'done' })
-                    } else if (data.status === 'failed') {
-                        stopTextTimer()
-                        setText({ task: data, state: 'error', error: data.error_detail || 'Generation failed.' })
-                    }
-                } catch (e) {
-                    console.error('Polling text error:', e)
-                }
-            }
-            // Check image
-            if (image.state === 'polling' && image.task?.id) {
-                try {
-                    const { data } = await api.get(`/models/${image.task.id}/`)
-                    if (data.status === 'ready') {
-                        stopImageTimer()
-                        setImage({ task: data, state: 'done' })
-                    } else if (data.status === 'failed') {
-                        stopImageTimer()
-                        setImage({ task: data, state: 'error', error: data.error_detail || 'Generation failed.' })
-                    }
-                } catch (e) {
-                    console.error('Polling image error:', e)
-                }
-            }
-        }
-
-        const interval = setInterval(poll, 15000) // 15s fallback
-        return () => clearInterval(interval)
-    }, [text.state, text.task?.id, image.state, image.task?.id, stopTextTimer, stopImageTimer, setText, setImage])
-
     // ── public actions ────────────────────────────────────────────────────────
 
-    const startTextGeneration = useCallback(async (prompt, steps) => {
+    const startTextGeneration = useCallback(async (prompt, steps, options = {}) => {
         stopTextWS()
         stopTextTimer()
-        setText({ state: 'loading', task: null, error: '', elapsed: 0, prompt, steps })
+        const prevTask = text.task
+        setText({ state: 'loading', task: null, previousTask: prevTask, error: '', elapsed: 0, prompt, steps })
+        startTextTimer()
+
         try {
-            const { data } = await api.post('/generate/text/', { prompt, steps })
+            const payload = {
+                prompt: prompt.trim(),
+                steps: steps || 32,
+                inferenceSteps: steps || 32,
+                engine: options.engine || 'shap-e',
+                guidanceScale: options.guidanceScale !== undefined ? options.guidanceScale : 15.0,
+                format: options.format || 'obj',
+            }
+            const { data } = await api.post('/models/generate', payload)
             sessionStorage.setItem('gen_task_id_text', data.id)
-            setText({ task: data, state: 'polling' })
-            startTextTimer(data.created_at)
-            startWebSocket(data.id, setText, stopTextTimer, textWs)
+            if (data.status === 'ready') {
+                stopTextTimer()
+                setText({
+                    task: data,
+                    previousTask: null,
+                    state: 'done',
+                    error: '',
+                    elapsed: Math.round(data.generation_time || 0)
+                })
+            } else if (data.status === 'failed') {
+                stopTextTimer()
+                setText({ task: null, previousTask: prevTask, state: 'error', error: data.error_detail || 'Generation failed.' })
+            } else {
+                setText({ task: data, state: 'polling' })
+                startWebSocket(data.id, setText, stopTextTimer, textWs)
+            }
         } catch (e) {
             stopTextTimer()
-            setText({ state: 'error', error: e.response?.data?.error || 'Failed to start generation.' })
+            const errMsg = e.response?.data?.error || e.response?.data?.detail || e.response?.data?.error_detail || e.message || 'Failed to generate 3D model.'
+            setText({ state: 'error', task: null, previousTask: prevTask, error: errMsg })
         }
-    }, [startWebSocket, startTextTimer, stopTextTimer, stopTextWS, setText])
+    }, [startWebSocket, startTextTimer, stopTextTimer, stopTextWS, setText, text.task])
 
-    const startImageGeneration = useCallback(async (file, steps) => {
+    const startImageGeneration = useCallback(async (file, steps, options = {}) => {
         stopImageWS()
         stopImageTimer()
-        // Preview logic
-        const precuerUrl = URL.createObjectURL(file)
-        setImage({ state: 'loading', task: null, error: '', elapsed: 0, file, preview: precuerUrl, steps })
+        const previewUrl = URL.createObjectURL(file)
+        setImage({ state: 'loading', task: null, error: '', elapsed: 0, file, preview: previewUrl, steps })
+        startImageTimer()
 
         const form = new FormData()
         form.append('image', file)
-        form.append('steps', steps)
+        form.append('file', file)
+        form.append('steps', steps || 32)
+        form.append('inferenceSteps', steps || 32)
+        form.append('engine', options.engine || 'shap-e')
+        form.append('guidanceScale', options.guidanceScale !== undefined ? options.guidanceScale : 3.0)
+        form.append('format', options.format || 'obj')
+        if (options.name) form.append('name', options.name)
+
         try {
-            const { data } = await api.post('/generate/image/', form, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            })
+            const { data } = await api.post('/models/generate-from-image', form)
             sessionStorage.setItem('gen_task_id_image', data.id)
-            setImage({ task: data, state: 'polling' })
-            startImageTimer(data.created_at)
-            startWebSocket(data.id, setImage, stopImageTimer, imageWs)
+            if (data.status === 'ready') {
+                stopImageTimer()
+                setImage({
+                    task: data,
+                    state: 'done',
+                    error: '',
+                    elapsed: Math.round(data.generation_time || 0)
+                })
+            } else if (data.status === 'failed') {
+                stopImageTimer()
+                setImage({ task: null, state: 'error', error: data.error_detail || 'Image generation failed.' })
+            } else {
+                setImage({ task: data, state: 'polling' })
+                startWebSocket(data.id, setImage, stopImageTimer, imageWs)
+            }
         } catch (e) {
             stopImageTimer()
-            setImage({ state: 'error', error: e.response?.data?.error || 'Failed to start generation.' })
+            const errMsg = e.response?.data?.error || e.response?.data?.detail || e.response?.data?.message || e.message || 'Failed to generate 3D model from image.'
+            setImage({ state: 'error', error: errMsg })
         }
     }, [startWebSocket, startImageTimer, stopImageTimer, stopImageWS, setImage])
 
-    const resetText = useCallback(() => {
+    const resetText = useCallback((preserveCurrentPrompt = false) => {
         stopTextWS()
         stopTextTimer()
         sessionStorage.removeItem('gen_task_id_text')
-        setText_(INITIAL_TEXT())
+        setText_(prev => ({
+            ...INITIAL_TEXT(),
+            prompt: preserveCurrentPrompt ? prev.prompt : (localStorage.getItem('gen_text_prompt') || ''),
+            steps: prev.steps || 32,
+        }))
     }, [stopTextWS, stopTextTimer])
 
     const resetImage = useCallback(() => {
@@ -274,6 +274,7 @@ export function GenerationProvider({ children }) {
     const value = {
         // text
         textTask: text.task,
+        textPreviousTask: text.previousTask,
         textState: text.state,
         textElapsed: text.elapsed,
         textError: text.error,
@@ -306,7 +307,6 @@ export function GenerationProvider({ children }) {
         </GenerationContext.Provider>
     )
 }
-
 
 export const useGeneration = () => {
     const ctx = useContext(GenerationContext)
